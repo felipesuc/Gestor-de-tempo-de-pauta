@@ -3,1105 +3,1773 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Meeting Timer</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<title>Controle de Pauta</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-:root {
-  --bg: #0f0f13;
-  --surface: #1a1a22;
-  --surface2: #22222e;
-  --border: #2e2e3e;
-  --accent: #6c63ff;
-  --text: #e8e8f0;
-  --text2: #9090a8;
-  --text3: #5a5a72;
-  --danger: #ff4757;
-  --warn: #ffa502;
-  --ok: #2ed573;
-  --radius: 12px;
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#f2f1eb;--s1:#ffffff;--s2:#eceae2;--s3:#e2dfd6;--border:#d4d0c4;
+  --navy:#132044;--navy2:#1e3068;--yellow:#f5c800;--yellow2:#e0b500;
+  --text:#0d1b2a;--text2:#4a5568;--text3:#9aa3ae;
+  --ok:#1a7a4a;--warn:#b45309;--danger:#dc2626;--r:14px;
 }
+html,body{width:100%;min-height:100vh;background:var(--bg);font-family:'Inter',sans-serif;color:var(--text);overflow-x:hidden;}
 
-html, body {
-  background: #080810;
-  font-family: 'Inter', sans-serif;
-  color: var(--text);
-  min-height: 100vh;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 16px;
+/* ══ SETUP SCREEN ══ */
+#setup-screen{
+  display:flex;align-items:flex-start;justify-content:center;
+  min-height:100vh;padding:40px 20px;
+  background:linear-gradient(160deg,#0d1829 0%,#132044 60%,#1a2d5a 100%);
 }
-
-#app {
-  width: 400px;
-  background: var(--bg);
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  box-shadow: 0 24px 80px rgba(0,0,0,.7);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+#setup-card{
+  width:100%;max-width:640px;
+  background:var(--s1);border-radius:20px;
+  overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.35);
 }
-
-/* HEADER */
-#header {
-  display: flex;
-  align-items: center;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
-  background: rgba(255,255,255,.02);
-  gap: 10px;
+#setup-hero{
+  background:var(--navy);padding:28px 32px;
+  border-bottom:3px solid var(--yellow);
 }
-
-#header .logo {
-  font-size: 18px;
+#setup-hero .sh-logo{font-size:13px;font-weight:700;color:var(--yellow);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;opacity:.8;}
+#setup-hero h1{font-size:22px;font-weight:800;color:#fff;margin-bottom:6px;}
+#setup-hero p{font-size:13px;color:rgba(255,255,255,.45);line-height:1.6;}
+#setup-body{padding:28px 32px;display:flex;flex-direction:column;gap:20px;}
+.setup-section{display:flex;flex-direction:column;gap:10px;}
+.setup-section-title{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.setup-row{display:flex;gap:10px;}
+.setup-field{display:flex;flex-direction:column;gap:5px;flex:1;}
+.setup-label{font-size:11px;font-weight:600;color:var(--text2);}
+.setup-input,.setup-textarea{
+  background:var(--bg);border:1px solid var(--border);border-radius:9px;
+  color:var(--text);font-family:'Inter',sans-serif;font-size:13px;
+  padding:10px 13px;outline:none;width:100%;transition:border-color .15s;
 }
+.setup-input::placeholder,.setup-textarea::placeholder{color:var(--text3);}
+.setup-input:focus,.setup-textarea:focus{border-color:var(--navy);background:#fff;}
+.setup-textarea{resize:none;line-height:1.55;}
+input[type="time"].setup-input{cursor:pointer;}
 
-#header .title {
-  flex: 1;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text2);
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* Tags de participantes */
+#tags-wrap{
+  display:flex;flex-wrap:wrap;gap:6px;
+  background:var(--bg);border:1px solid var(--border);border-radius:9px;
+  padding:8px 10px;min-height:44px;align-items:center;cursor:text;
+  transition:border-color .15s;
 }
-
-#btn-play-header {
-  background: var(--accent);
-  border: none;
-  border-radius: 8px;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  font-family: 'Inter', sans-serif;
-  padding: 6px 14px;
-  cursor: pointer;
-  transition: background .15s;
-  white-space: nowrap;
+#tags-wrap:focus-within{border-color:var(--navy);background:#fff;}
+.tag{
+  display:flex;align-items:center;gap:4px;
+  background:var(--navy);border-radius:6px;
+  padding:3px 8px;font-size:12px;font-weight:600;color:#fff;
 }
-#btn-play-header:hover { background: #7c75ff; }
-#btn-play-header.paused { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); }
+.tag .tag-x{cursor:pointer;color:rgba(255,255,255,.5);font-size:11px;margin-left:2px;}
+.tag .tag-x:hover{color:#fff;}
+#tag-input{border:none;background:none;outline:none;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);min-width:120px;flex:1;}
+#tag-input::placeholder{color:var(--text3);}
 
-/* TABS */
-#tabs {
-  display: flex;
-  padding: 10px 14px 0;
-  gap: 2px;
-  border-bottom: 1px solid var(--border);
+/* Pautas no setup */
+#setup-pautas{display:flex;flex-direction:column;gap:6px;}
+.sp-row{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:8px 12px;}
+.sp-num{width:20px;height:20px;border-radius:50%;background:var(--navy);color:var(--yellow);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sp-topic{flex:1;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sp-dur{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);flex-shrink:0;}
+.sp-del{background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:2px 5px;border-radius:5px;transition:color .12s;}
+.sp-del:hover{color:var(--danger);}
+.sp-edit{background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:2px 5px;border-radius:5px;transition:color .12s;margin-right:2px;}
+.sp-edit:hover{color:var(--navy);}
+.sp-row.editing{background:var(--s1);border-color:var(--navy);flex-wrap:wrap;gap:6px;}
+.sp-edit-fields{display:none;width:100%;gap:6px;align-items:center;}
+.sp-row.editing .sp-edit-fields{display:flex;}
+.sp-row.editing .sp-topic,.sp-row.editing .sp-dur,.sp-row.editing .sp-edit,.sp-row.editing .sp-del{display:none;}
+.sp-row.editing .sp-num{align-self:center;}
+.sp-edit-inp{background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:7px 10px;outline:none;flex:1;transition:border-color .15s;}
+.sp-edit-inp:focus{border-color:var(--navy);}
+.sp-edit-min{width:64px;flex-shrink:0;}
+.sp-save-btn{background:var(--navy);border:none;border-radius:7px;color:var(--yellow);font-size:11px;font-weight:700;font-family:'Inter',sans-serif;padding:7px 12px;cursor:pointer;flex-shrink:0;transition:background .15s;}
+.sp-save-btn:hover{background:var(--navy2);}
+.sp-cancel-btn{background:var(--s2);border:1px solid var(--border);border-radius:7px;color:var(--text2);font-size:11px;font-weight:600;font-family:'Inter',sans-serif;padding:7px 10px;cursor:pointer;flex-shrink:0;}
+.sp-cancel-btn:hover{color:var(--text);}
+#setup-add-row{display:flex;gap:8px;align-items:flex-end;}
+.setup-add-btn{background:var(--navy);border:none;border-radius:9px;color:var(--yellow);font-size:12px;font-weight:700;font-family:'Inter',sans-serif;padding:10px 18px;cursor:pointer;flex-shrink:0;transition:background .15s;white-space:nowrap;}
+.setup-add-btn:hover{background:var(--navy2);}
+.setup-empty{text-align:center;color:var(--text3);font-size:12px;padding:16px 0;}
+
+/* Botão iniciar */
+#setup-footer{padding:0 32px 28px;}
+#btn-launch{
+  width:100%;background:var(--yellow);border:none;border-radius:12px;
+  color:var(--navy);font-size:15px;font-weight:800;font-family:'Inter',sans-serif;
+  padding:15px;cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;justify-content:center;gap:10px;
 }
+#btn-launch:hover{background:var(--yellow2);}
+#btn-launch:disabled{opacity:.4;cursor:not-allowed;}
+#launch-summary{font-size:11px;color:rgba(19,32,68,.55);margin-top:6px;text-align:center;}
 
-.tab {
-  flex: 1;
-  padding: 8px 4px;
-  text-align: center;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text3);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  transition: all .15s;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-}
-.tab:hover { color: var(--text2); }
-.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+/* ══ TOPBAR ══ */
+#topbar{height:52px;border-bottom:1px solid var(--border);align-items:center;padding:0 24px;gap:12px;background:var(--navy);position:sticky;top:0;z-index:50;display:none;}
+.logo{font-size:15px;font-weight:800;color:var(--yellow);display:flex;align-items:center;gap:8px;}
+.logo span{color:rgba(255,255,255,.35);font-weight:400;font-size:11px;letter-spacing:.06em;}
+.tb-spacer{flex:1;}
+#tb-name{font-size:11px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:.07em;text-transform:uppercase;max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tb-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:rgba(255,255,255,.75);font-size:11px;font-weight:600;font-family:'Inter',sans-serif;padding:6px 14px;cursor:pointer;transition:all .15s;}
+.tb-btn:hover{background:rgba(255,255,255,.16);color:#fff;}
+.tb-btn.yellow{background:var(--yellow);border-color:var(--yellow);color:var(--navy);font-weight:800;}
+.tb-btn.yellow:hover{background:var(--yellow2);}
+.tb-btn.red{background:rgba(220,38,38,.2);border-color:rgba(220,38,38,.5);color:#ff9090;}
+.tb-btn.red:hover{background:rgba(220,38,38,.35);color:#ffbaba;}
+#meeting-status{display:flex;align-items:center;gap:6px;font-size:11px;}
+#status-dot{width:8px;height:8px;border-radius:50%;background:var(--text3);}
+#status-dot.running{background:var(--yellow);box-shadow:0 0 6px var(--yellow);animation:pdot 1.5s infinite;}
+#status-dot.ended{background:var(--ok);}
+@keyframes pdot{0%,100%{opacity:1}50%{opacity:.3}}
+#status-txt{color:rgba(255,255,255,.45);}
 
-/* PANELS */
-.panel { display: none; flex-direction: column; gap: 10px; padding: 14px; }
-.panel.active { display: flex; }
+/* ══ LAYOUT ══ */
+#app-layout{display:none;grid-template-columns:340px 1fr;min-height:calc(100vh - 52px);}
 
-/* ═══════════════════
-   TIMER PANEL
-═══════════════════ */
+/* ══ LEFT ══ */
+#left{border-right:1px solid var(--border);padding:20px;display:flex;flex-direction:column;gap:14px;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto;background:var(--s1);}
 
-/* Alerta fim */
-#end-alert {
-  display: none;
-  background: linear-gradient(135deg, rgba(255,71,87,.18), rgba(255,71,87,.06));
-  border: 1px solid rgba(255,71,87,.5);
-  border-radius: var(--radius);
-  padding: 10px 14px;
-  text-align: center;
-  animation: fadeUp .3s;
-}
-#end-alert.show { display: block; }
-#end-alert .ea-title { font-size: 13px; font-weight: 700; color: var(--danger); margin-bottom: 2px; }
-#end-alert .ea-sub { font-size: 11px; color: var(--text2); }
+/* Anel geral */
+#gen-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;}
+#gen-lbl{font-size:9px;font-weight:700;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;}
+#gen-ring-svg-wrap{position:relative;width:160px;height:160px;}
+#gen-ring-svg-wrap svg{transform:rotate(-90deg);width:160px;height:160px;}
+.gr-bg{fill:none;stroke:var(--s3);stroke-width:8;}
+.gr-plan{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 1s linear,stroke .4s;}
+.gr-real{fill:none;stroke-width:3;stroke-linecap:round;stroke-dasharray:4 5;transition:stroke-dashoffset 1s linear;}
+#gen-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;}
+#gen-plan-clk{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;color:var(--navy);line-height:1;transition:color .3s;}
+#gen-plan-clk.warn{color:var(--warn);}
+#gen-plan-clk.danger{color:var(--danger);animation:blink 1s infinite;}
+#gen-real-clk{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--text3);}
+#gen-real-clk.over{color:var(--danger);font-weight:700;}
+#gen-adh-lbl{font-size:10px;color:var(--text3);margin-top:1px;}
+#gen-legend{display:flex;gap:14px;justify-content:center;}
+.leg{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2);}
+.leg-dot{width:7px;height:7px;border-radius:50%;}
 
 /* Bloco ativo */
-#active-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px;
-  position: relative;
-  overflow: hidden;
-}
-
-#active-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent), #a855f7);
-  opacity: .8;
-}
-
-#active-eyebrow {
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--accent);
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  margin-bottom: 4px;
-}
-
-#active-topic {
-  font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-#active-presenter {
-  font-size: 11px;
-  color: var(--text2);
-  margin-bottom: 14px;
-  min-height: 14px;
-}
-
-/* Relógio + anel */
-#clock-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 12px;
-}
-
-#clock {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 52px;
-  font-weight: 600;
-  line-height: 1;
-  color: var(--text);
-  transition: color .3s;
-  letter-spacing: -.02em;
-}
-#clock.warn   { color: var(--warn); }
-#clock.danger { color: var(--danger); animation: blink 1s infinite; }
-
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
-@keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
-
-#ring-wrap {
-  position: relative;
-  width: 64px; height: 64px;
-  flex-shrink: 0;
-}
-#ring-wrap svg { transform: rotate(-90deg); width: 64px; height: 64px; }
-.ring-bg { fill: none; stroke: var(--border); stroke-width: 5; }
-.ring-fg { fill: none; stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset .8s, stroke .3s; }
-#ring-pct {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: 700; color: var(--text2);
-}
-
-/* Barra linear */
-#bar-wrap {
-  height: 5px;
-  background: var(--surface2);
-  border-radius: 3px;
-  overflow: hidden;
-  margin-bottom: 12px;
-}
-#bar {
-  height: 100%;
-  border-radius: 3px;
-  background: var(--accent);
-  transition: width .8s, background .3s;
-}
-
-/* Controles */
-#controls {
-  display: flex;
-  gap: 6px;
-}
-
-.ctrl {
-  flex: 1;
-  padding: 9px 4px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--surface2);
-  color: var(--text2);
-  font-size: 11px;
-  font-weight: 600;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  transition: all .15s;
-  display: flex; align-items: center; justify-content: center; gap: 3px;
-}
-.ctrl:hover { border-color: var(--accent); color: var(--accent); }
-.ctrl.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-.ctrl.primary:hover { background: #7c75ff; }
-.ctrl.red { border-color: rgba(255,71,87,.4); color: var(--danger); }
-.ctrl.red:hover { background: rgba(255,71,87,.12); }
+#active-block{background:var(--navy);border-radius:var(--r);padding:14px;position:relative;overflow:hidden;}
+#active-block::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--yellow);}
+#ab-eyebrow{font-size:9px;font-weight:700;color:var(--yellow);letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px;}
+#ab-topic{font-size:14px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;}
+#ab-presenter{font-size:11px;color:rgba(255,255,255,.4);margin-bottom:12px;min-height:14px;}
+#block-dual{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+#br-wrap{position:relative;width:50px;height:50px;flex-shrink:0;}
+#br-wrap svg{transform:rotate(-90deg);width:50px;height:50px;}
+.br-bg{fill:none;stroke:rgba(255,255,255,.1);stroke-width:5;}
+.br-plan{fill:none;stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset .8s,stroke .3s;}
+.br-real{fill:none;stroke-width:3;stroke-linecap:round;stroke-dasharray:3 4;transition:stroke-dashoffset .8s;}
+#br-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:rgba(255,255,255,.35);}
+#block-clocks{display:flex;flex-direction:column;gap:4px;flex:1;}
+.bc-row{display:flex;align-items:center;gap:7px;}
+.bc-tag{font-size:8px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 5px;border-radius:4px;flex-shrink:0;min-width:32px;text-align:center;}
+.bc-tag.plan{background:rgba(245,200,0,.2);color:var(--yellow);}
+.bc-tag.real{background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);}
+.bc-tag.over-tag{background:rgba(220,38,38,.25);color:#ff9090;}
+#bl-plan{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;color:#fff;line-height:1;transition:color .3s;}
+#bl-plan.warn{color:var(--yellow);}
+#bl-plan.danger{color:#ff9090;animation:blink 1s infinite;}
+#bl-plan.over{color:#ff9090;animation:blink .8s infinite;}
+#bl-real{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;color:rgba(255,255,255,.5);transition:color .3s;}
+#bl-real.over{color:#ff9090;font-weight:700;}
+#block-bars{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
+.bbar-row{display:flex;align-items:center;gap:6px;}
+.bbar-lbl{font-size:8px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.07em;text-transform:uppercase;width:26px;flex-shrink:0;}
+.bbar-track{flex:1;height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;}
+.bbar-fill{height:100%;border-radius:2px;transition:width .8s,background .3s;}
+#block-ctrls{display:flex;gap:6px;}
+.bctrl{flex:1;padding:8px 4px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:rgba(255,255,255,.7);font-size:11px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:3px;}
+.bctrl:hover{background:rgba(255,255,255,.15);color:#fff;}
+.bctrl.prim{background:var(--yellow);border-color:var(--yellow);color:var(--navy);font-weight:800;}
+.bctrl.prim:hover{background:var(--yellow2);}
+.bctrl.red{border-color:rgba(255,128,128,.3);color:#ff9090;}
+.bctrl.red:hover{background:rgba(255,100,100,.12);}
 
 /* Próximo */
-#next-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 14px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-#next-card .nc-label { font-size: 9px; font-weight: 700; color: var(--text3); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 2px; }
-#next-card .nc-topic { font-size: 12px; font-weight: 600; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 230px; }
-#next-card .nc-dur { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text3); flex-shrink: 0; }
+#next-block{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;}
+.nb-lbl{font-size:9px;font-weight:700;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px;}
+.nb-topic{font-size:12px;font-weight:600;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:170px;}
+.nb-dur{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text3);flex-shrink:0;}
 
-/* Agenda resumo */
-#agenda-mini {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-}
-#agenda-mini-header {
-  padding: 8px 12px;
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--text3);
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-}
-#agenda-mini-list { max-height: 130px; overflow-y: auto; }
-.ami {
-  display: flex; align-items: center; gap: 8px;
-  padding: 6px 12px;
-  border-bottom: 1px solid rgba(255,255,255,.03);
-  font-size: 11px;
-}
-.ami:last-child { border-bottom: none; }
-.ami .ami-dot {
-  width: 16px; height: 16px; border-radius: 50%;
-  background: var(--surface2); border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 8px; font-weight: 700; color: var(--text3); flex-shrink: 0;
-}
-.ami.done .ami-dot { background: rgba(46,213,115,.15); border-color: var(--ok); color: var(--ok); }
-.ami.current .ami-dot { background: rgba(108,99,255,.25); border-color: var(--accent); color: var(--accent); }
-.ami .ami-topic { flex: 1; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ami.done .ami-topic { color: var(--text3); text-decoration: line-through; }
-.ami.current .ami-topic { color: var(--text); font-weight: 600; }
-.ami .ami-dur { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text3); }
+/* Aderência */
+#adh-box{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;}
+#adh-title{font-size:9px;font-weight:700;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;}
+#adh-track{height:7px;background:var(--s3);border-radius:4px;overflow:hidden;margin-bottom:7px;}
+#adh-fill{height:100%;border-radius:4px;transition:width .5s,background .3s;}
+#adh-row{display:flex;justify-content:space-between;align-items:baseline;}
+#adh-pct{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:var(--navy);}
+#adh-detail{font-size:10px;color:var(--text3);text-align:right;line-height:1.7;}
 
-/* ═══════════════════
-   AGENDA PANEL
-═══════════════════ */
-#add-form {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-#add-form .form-title { font-size: 10px; font-weight: 700; color: var(--text2); letter-spacing: .06em; text-transform: uppercase; }
+/* Stats */
+#stats{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.sc{background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:9px 11px;}
+.sv{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:var(--navy);margin-bottom:2px;}
+.sv.red{color:var(--danger);}
+.sl{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;}
 
-input[type=text], input[type=number] {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  color: var(--text);
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  padding: 8px 10px;
-  outline: none;
-  width: 100%;
-  transition: border-color .15s;
-}
-input[type=text]::placeholder { color: var(--text3); }
-input[type=text]:focus, input[type=number]:focus { border-color: var(--accent); }
-input[type=number] { width: 70px; flex-shrink: 0; }
+/* Alerta */
+#end-alert{display:none;background:rgba(220,38,38,.06);border:1px solid rgba(220,38,38,.3);border-radius:9px;padding:9px 13px;text-align:center;}
+#end-alert.show{display:block;animation:fadeUp .3s;}
+.ea-t{font-size:12px;font-weight:700;color:var(--danger);margin-bottom:2px;}
+.ea-s{font-size:11px;color:var(--text2);}
 
-.form-row { display: flex; gap: 6px; align-items: center; }
+/* ══ RIGHT ══ */
+#right{padding:28px;display:flex;flex-direction:column;gap:20px;overflow-y:auto;}
 
-.btn-add {
-  background: var(--accent);
-  border: none; border-radius: 7px;
-  color: #fff; font-size: 12px; font-weight: 700;
-  font-family: 'Inter', sans-serif;
-  padding: 8px 14px; cursor: pointer; flex-shrink: 0;
-  transition: background .15s;
+/* Card de contexto da reunião (só leitura, compacto) */
+#meeting-context-card{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:var(--r);overflow:hidden;
 }
-.btn-add:hover { background: #7c75ff; }
+#mcc-header{
+  background:var(--navy);padding:10px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+#mcc-header span{font-size:11px;font-weight:700;color:rgba(255,255,255,.8);letter-spacing:.04em;}
+#mcc-header .mcc-meta{font-size:10px;color:rgba(255,255,255,.35);}
+#mcc-body{padding:12px 16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.mcc-field{display:flex;flex-direction:column;gap:3px;}
+.mcc-field.full{grid-column:1/-1;}
+.mcc-lbl{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.09em;}
+.mcc-val{font-size:12px;color:var(--text);line-height:1.5;font-weight:500;}
+.mcc-tag{display:inline-flex;align-items:center;background:rgba(19,32,68,.08);border-radius:5px;padding:2px 7px;font-size:11px;font-weight:600;color:var(--navy);margin:2px 2px 0 0;}
 
-#pauta-list {
-  display: flex; flex-direction: column; gap: 6px;
-  max-height: 380px; overflow-y: auto;
-  padding-right: 2px;
-}
+/* Lista de pautas */
+#list-header{display:flex;align-items:center;gap:12px;}
+#list-header h2{font-size:13px;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;flex:1;}
+#btn-add-toggle{background:var(--navy);border:none;border-radius:8px;color:var(--yellow);font-size:12px;font-weight:700;font-family:'Inter',sans-serif;padding:7px 16px;cursor:pointer;transition:background .15s;}
+#btn-add-toggle:hover{background:var(--navy2);}
+#add-form{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:16px;display:none;flex-direction:column;gap:10px;box-shadow:0 2px 12px rgba(0,0,0,.06);}
+#add-form.open{display:flex;animation:fadeUp .2s;}
+.form-title{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;}
+.finput{background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:9px 12px;outline:none;width:100%;transition:border-color .15s;}
+.finput::placeholder{color:var(--text3);}
+.finput:focus{border-color:var(--navy);}
+.form-row{display:flex;gap:8px;align-items:center;}
+.btn-submit{background:var(--navy);border:none;border-radius:8px;color:var(--yellow);font-size:12px;font-weight:700;font-family:'Inter',sans-serif;padding:9px 18px;cursor:pointer;flex-shrink:0;transition:background .15s;}
+.btn-submit:hover{background:var(--navy2);}
 
-.pcard {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 10px 10px 8px;
-  transition: border-color .15s;
-  cursor: default;
-}
-.pcard:hover { border-color: rgba(108,99,255,.35); }
-.pcard.dragging { opacity: .3; }
-.pcard.dragover { border-color: var(--accent); background: rgba(108,99,255,.08); }
-.pcard.is-current { border-color: rgba(108,99,255,.6); }
+/* ══ PAUTA ROWS ══ */
+#pauta-list{display:flex;flex-direction:column;gap:6px;}
+.prow{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:border-color .2s,box-shadow .2s;cursor:default;position:relative;}
+.prow:hover{border-color:rgba(19,32,68,.22);box-shadow:0 2px 8px rgba(0,0,0,.05);}
+.prow.is-current{border-color:var(--navy);box-shadow:0 2px 16px rgba(19,32,68,.1);}
+.prow.is-over{border-color:rgba(220,38,38,.5)!important;}
+.prow.dragging{opacity:.3;}
+.prow.dragover{border-color:var(--yellow);background:rgba(245,200,0,.04);}
+.prow.done{opacity:.6;}
+.prow-fill{position:absolute;top:0;left:0;bottom:0;width:0;pointer-events:none;opacity:.07;border-radius:var(--r);transition:width 1s,background .5s;}
+.prow-inner{position:relative;z-index:1;display:flex;align-items:center;padding:11px 13px;gap:11px;}
+.prow-handle{cursor:grab;color:var(--text3);font-size:16px;padding:2px;flex-shrink:0;}
+.prow-handle:active{cursor:grabbing;}
+.prow-num{width:24px;height:24px;border-radius:50%;background:var(--s2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--text3);flex-shrink:0;transition:all .3s;}
+.prow.done .prow-num{background:rgba(26,122,74,.1);border-color:var(--ok);color:var(--ok);}
+.prow.is-current .prow-num{background:var(--yellow);border-color:var(--yellow2);color:var(--navy);}
+.prow.is-over .prow-num{background:rgba(220,38,38,.1);border-color:rgba(220,38,38,.5);color:var(--danger);}
+.prow-info{flex:1;min-width:0;}
+.prow-topic{font-size:13px;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.prow.done .prow-topic{text-decoration:line-through;color:var(--text3);}
+.prow-sub{font-size:11px;color:var(--text2);display:flex;gap:8px;flex-wrap:wrap;}
+.prow-timers{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;min-width:76px;}
+.prow-dur{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text3);font-weight:500;}
+.prow-plan-t{display:none;font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--navy);line-height:1;transition:color .3s;}
+.prow-real-t{display:none;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--text3);}
+.prow.is-current .prow-plan-t{display:block;}
+.prow.is-current .prow-real-t{display:block;}
+.prow.is-current .prow-dur{display:none;}
+.prow-plan-t.warn{color:var(--warn);}
+.prow-plan-t.danger{color:var(--danger);}
+.prow-plan-t.over{color:var(--danger);animation:blink .8s infinite;}
+.prow-real-t.over{color:var(--danger);font-weight:700;}
+.prow-minibar{width:72px;height:3px;background:var(--s3);border-radius:2px;overflow:hidden;display:none;}
+.prow.is-current .prow-minibar{display:block;}
+.prow-mb-fill{height:100%;border-radius:2px;transition:width .8s,background .3s;}
+.prow-actions{display:flex;gap:1px;flex-shrink:0;}
+.iBtn{background:none;border:none;cursor:pointer;color:var(--text3);padding:5px 5px;border-radius:5px;font-size:12px;transition:all .15s;}
+.iBtn:hover{background:var(--s2);color:var(--text);}
+.iBtn.del:hover{color:var(--danger);}
+.iBtn.prow-play-btn{color:var(--navy);font-size:13px;}
+.iBtn.prow-play-btn.playing{color:var(--warn);}
+.iBtn.prow-play-btn:hover{background:rgba(19,32,68,.08);color:var(--navy);}
+.prow-tbar{height:3px;transition:background 1s;}
 
-.pcard .handle { cursor: grab; color: var(--text3); font-size: 15px; padding: 2px 3px; flex-shrink: 0; }
-.pcard .handle:active { cursor: grabbing; }
+/* ══ ESTRELAS — discretas ══ */
+.star-zone{
+  display:none;
+  flex-direction:column;gap:0;
+  border-top:1px solid var(--border);
+  position:relative;z-index:1;
+}
+.prow.done .star-zone,
+.prow.is-current .star-zone{display:flex;}
+.star-zone-row{display:flex;align-items:center;gap:8px;padding:7px 14px 7px 52px;}
+.star-zone-lbl{font-size:10px;color:var(--text3);flex-shrink:0;}
+.stars{display:flex;gap:2px;}
+.star{font-size:15px;cursor:pointer;color:var(--border);transition:color .1s,transform .1s;line-height:1;user-select:none;}
+.star.lit{color:var(--yellow2);}
+.star:hover{transform:scale(1.2);}
+.star-note-val{font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-left:3px;}
+.star-report-wrap{padding:0 14px 8px 52px;display:none;}
+.star-report-wrap.visible{display:block;}
+.star-report{
+  width:100%;background:none;border:none;border-bottom:1px dashed var(--border);
+  color:var(--text2);font-family:'Inter',sans-serif;font-size:11px;
+  padding:3px 0;outline:none;resize:none;line-height:1.5;
+  transition:border-color .15s;
+}
+.star-report::placeholder{color:var(--text3);}
+.star-report:focus{border-color:var(--navy);}
 
-.pcard .pnum {
-  width: 20px; height: 20px; border-radius: 50%;
-  background: var(--surface2); border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 9px; font-weight: 700; color: var(--text3); flex-shrink: 0;
-}
-.pcard.is-current .pnum { background: rgba(108,99,255,.2); border-color: var(--accent); color: var(--accent); }
+/* ══ DASHBOARD FINAL ══ */
+#dashboard{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;align-items:center;justify-content:center;padding:20px;}
+#dashboard.show{display:flex;animation:fadeUp .3s;}
+#dash-box{background:var(--s1);border-radius:20px;width:100%;max-width:620px;max-height:92vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,.3);}
+#dash-header{background:var(--navy);border-radius:20px 20px 0 0;padding:22px 28px;}
+#dash-header h2{font-size:19px;font-weight:800;color:#fff;margin-bottom:3px;}
+#dash-header .dh-sub{font-size:11px;color:rgba(255,255,255,.4);}
+#dash-header .dh-meta{display:flex;gap:16px;margin-top:10px;font-size:11px;color:rgba(255,255,255,.55);}
+#dash-header .dh-meta span{display:flex;align-items:center;gap:4px;}
+#dash-body{padding:22px 28px;display:flex;flex-direction:column;gap:18px;}
 
-.pcard .pinfo { flex: 1; min-width: 0; }
-.pcard .ptopic { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pcard .ppresenter { font-size: 10px; color: var(--text2); margin-top: 1px; }
-.pcard .pdur { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text2); flex-shrink: 0; }
+/* Score */
+#dash-score{display:flex;align-items:center;gap:18px;background:var(--s2);border-radius:var(--r);padding:18px;border:1px solid var(--border);}
+#dash-score-num{font-family:'JetBrains Mono',monospace;font-size:48px;font-weight:800;line-height:1;flex-shrink:0;}
+#dash-score-info{flex:1;}
+#dash-score-label{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px;}
+#dash-score-sub{font-size:12px;color:var(--text2);line-height:1.55;}
+#dash-score-bar-wrap{height:7px;background:var(--s3);border-radius:4px;overflow:hidden;margin-top:10px;}
+#dash-score-bar{height:100%;border-radius:4px;transition:width .8s;}
 
-.pcard .pactions { display: flex; gap: 1px; }
-.iBtn {
-  background: none; border: none; cursor: pointer;
-  color: var(--text3); padding: 4px 5px; border-radius: 5px;
-  font-size: 12px; transition: all .15s;
-  display: flex; align-items: center; justify-content: center;
-}
-.iBtn:hover { background: var(--surface2); color: var(--text); }
-.iBtn.del:hover { color: var(--danger); }
+/* Contexto no dash */
+#dash-context{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.dc-field{display:flex;flex-direction:column;gap:3px;}
+.dc-field.full{grid-column:1/-1;}
+.dc-lbl{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.09em;}
+.dc-val{font-size:12px;color:var(--text);line-height:1.5;font-weight:500;}
 
-/* empty state */
-.empty-state {
-  text-align: center; color: var(--text3);
-  font-size: 12px; padding: 28px 0; line-height: 1.8;
-}
+/* Summary cards */
+#dash-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.ds-card{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;}
+.ds-card .dv{font-family:'JetBrains Mono',monospace;font-size:19px;font-weight:700;color:var(--navy);margin-bottom:2px;}
+.ds-card .dv.red{color:var(--danger);}
+.ds-card .dl{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;}
 
-/* ═══════════════════
-   CONFIG PANEL
-═══════════════════ */
-.cfg-box {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-.cfg-head {
-  padding: 8px 14px;
-  font-size: 9px; font-weight: 700; color: var(--text3);
-  letter-spacing: .1em; text-transform: uppercase;
-  border-bottom: 1px solid var(--border);
-}
-.cfg-row {
-  display: flex; align-items: center;
-  padding: 11px 14px; gap: 10px;
-  border-bottom: 1px solid rgba(255,255,255,.03);
-}
-.cfg-row:last-child { border-bottom: none; }
-.cfg-lbl { flex: 1; font-size: 12px; color: var(--text2); }
-.cfg-val { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text3); }
+/* Tabela por bloco */
+#dash-table-title{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;}
+#dash-table{display:flex;flex-direction:column;gap:5px;}
+.dt-row{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;}
+.dt-main{display:flex;align-items:center;gap:10px;}
+.dt-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;}
+.dt-num.ok{background:rgba(26,122,74,.12);border:1px solid var(--ok);color:var(--ok);}
+.dt-num.over{background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.4);color:var(--danger);}
+.dt-topic{flex:1;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dt-bar{flex:0 0 70px;height:4px;background:var(--s3);border-radius:2px;overflow:hidden;}
+.dt-bar-fill{height:100%;border-radius:2px;}
+.dt-times{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;}
+.dt-plan{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);}
+.dt-real{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;}
+.dt-real.ok{color:var(--ok);}
+.dt-real.over{color:var(--danger);}
+.dt-stars-row{display:flex;align-items:center;gap:3px;margin-top:6px;padding-top:6px;border-top:1px solid rgba(0,0,0,.06);}
+.dt-stars-lbl{font-size:9px;color:var(--text3);font-weight:500;flex:1;}
+.dt-star{font-size:13px;color:var(--border);}
+.dt-star.lit{color:var(--yellow2);}
+.dt-note{font-size:9px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-left:4px;}
 
-.cBtn {
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 7px; color: var(--text2);
-  font-size: 11px; font-weight: 600; font-family: 'Inter', sans-serif;
-  padding: 6px 12px; cursor: pointer; transition: all .15s;
-}
-.cBtn:hover { border-color: var(--accent); color: var(--accent); }
-.cBtn.red { border-color: rgba(255,71,87,.4); color: var(--danger); }
-.cBtn.red:hover { background: rgba(255,71,87,.1); }
+#dash-footer{padding:0 28px 24px;}
+.dash-close-btn{width:100%;background:var(--navy);border:none;border-radius:10px;color:var(--yellow);font-size:14px;font-weight:800;font-family:'Inter',sans-serif;padding:13px;cursor:pointer;transition:background .15s;}
+.dash-close-btn:hover{background:var(--navy2);}
 
-/* MODAL */
-#modal {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,.65); z-index: 100;
-  align-items: center; justify-content: center;
-  animation: fadeUp .2s;
-}
-#modal.show { display: flex; }
-#modal-box {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 16px; padding: 20px; width: 340px;
-  display: flex; flex-direction: column; gap: 10px;
-  box-shadow: 0 20px 60px rgba(0,0,0,.6);
-}
-#modal-box h3 { font-size: 14px; font-weight: 700; }
-.mlabel { font-size: 10px; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
-.mrow { display: flex; gap: 8px; margin-top: 4px; }
-.mBtn {
-  flex: 1; background: var(--accent); border: none; border-radius: 8px;
-  color: #fff; font-weight: 700; font-size: 12px; font-family: 'Inter', sans-serif;
-  padding: 9px; cursor: pointer; transition: background .15s;
-}
-.mBtn:hover { background: #7c75ff; }
-.mBtn.cancel {
-  background: var(--surface2); border: 1px solid var(--border);
-  color: var(--text2); flex: 0 0 auto; padding: 9px 16px;
-}
-.mBtn.cancel:hover { color: var(--text); background: var(--surface2); }
+/* Modal */
+#modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center;}
+#modal.show{display:flex;animation:fadeUp .2s;}
+#modal-box{background:var(--s1);border:1px solid var(--border);border-radius:18px;padding:24px;width:360px;box-shadow:0 24px 60px rgba(0,0,0,.15);display:flex;flex-direction:column;gap:12px;}
+#modal-box h3{font-size:15px;font-weight:700;}
+.mlbl{font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;}
+.mrow2{display:flex;gap:8px;margin-top:4px;}
+.mbtn{flex:1;background:var(--navy);border:none;border-radius:9px;color:var(--yellow);font-weight:700;font-size:13px;font-family:'Inter',sans-serif;padding:10px;cursor:pointer;transition:background .15s;}
+.mbtn:hover{background:var(--navy2);}
+.mbtn.cancel{background:var(--s2);border:1px solid var(--border);color:var(--text2);flex:0 0 auto;padding:10px 18px;}
+.mbtn.cancel:hover{color:var(--text);}
 
-/* FLASH */
-.flash {
-  position: fixed; inset: 0; pointer-events: none; z-index: 200;
-  border-radius: 20px; animation: flashAnim .7s forwards;
-}
-@keyframes flashAnim { 0%{opacity:1} 100%{opacity:0} }
+/* Config */
+#config-view{display:none;position:fixed;inset:0;background:var(--bg);z-index:100;overflow-y:auto;padding:40px;}
 
-/* SCROLLBAR */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+/* ══ HISTÓRICO ══ */
+#history-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:flex-start;justify-content:center;padding:32px 20px;overflow-y:auto;}
+#history-overlay.show{display:flex;animation:fadeUp .25s;}
+#history-box{background:var(--s1);border-radius:20px;width:100%;max-width:680px;box-shadow:0 32px 80px rgba(0,0,0,.3);overflow:hidden;}
+#history-header{background:var(--navy);padding:18px 24px;display:flex;align-items:center;gap:12px;}
+#history-header h2{font-size:17px;font-weight:800;color:#fff;flex:1;}
+#history-header .hh-close{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.7);font-size:12px;font-weight:600;font-family:'Inter',sans-serif;padding:6px 14px;cursor:pointer;transition:all .15s;}
+#history-header .hh-close:hover{background:rgba(255,255,255,.2);color:#fff;}
+#history-body{padding:20px 24px;display:flex;flex-direction:column;gap:10px;max-height:70vh;overflow-y:auto;}
+.hist-empty{text-align:center;color:var(--text3);font-size:13px;padding:32px 0;line-height:2;}
+.hcard{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:border-color .15s,box-shadow .15s;}
+.hcard:hover{border-color:var(--navy);box-shadow:0 2px 12px rgba(19,32,68,.1);}
+.hcard-top{display:flex;align-items:center;gap:12px;padding:12px 16px;}
+.hcard-score{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;flex-shrink:0;}
+.hcard-score.ok{background:rgba(26,122,74,.12);border:2px solid var(--ok);color:var(--ok);}
+.hcard-score.warn{background:rgba(180,83,9,.1);border:2px solid var(--warn);color:var(--warn);}
+.hcard-score.bad{background:rgba(220,38,38,.1);border:2px solid var(--danger);color:var(--danger);}
+.hcard-info{flex:1;min-width:0;}
+.hcard-title{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px;}
+.hcard-meta{font-size:11px;color:var(--text2);display:flex;gap:10px;flex-wrap:wrap;}
+.hcard-chips{display:flex;gap:6px;padding:0 16px 12px;flex-wrap:wrap;}
+.hcard-chip{font-size:10px;font-weight:600;color:var(--text2);background:var(--s1);border:1px solid var(--border);border-radius:5px;padding:2px 8px;}
+.hcard-del{background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:6px;border-radius:6px;flex-shrink:0;transition:color .12s;}
+.hcard-del:hover{color:var(--danger);}
 
-/* DICA JANELA */
-#window-tip {
-  background: rgba(108,99,255,.08);
-  border: 1px solid rgba(108,99,255,.25);
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 11px;
-  color: var(--text2);
-  line-height: 1.6;
-  display: flex; gap: 10px; align-items: flex-start;
-}
-#window-tip .tip-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+/* Painel de detalhe do histórico */
+#hist-detail-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:600;align-items:center;justify-content:center;padding:20px;}
+#hist-detail-overlay.show{display:flex;animation:fadeUp .2s;}
+#hist-detail-box{background:var(--s1);border-radius:20px;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,.3);}
+
+.flash{position:fixed;inset:0;pointer-events:none;z-index:400;animation:flashOut .8s forwards;}
+@keyframes flashOut{0%{opacity:1}100%{opacity:0}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 </style>
 </head>
 <body>
 
-<div id="app">
+<!-- ══ TELA DE CADASTRO ══ -->
+<div id="setup-screen">
+  <div id="setup-card">
+    <div id="setup-hero">
+      <div class="sh-logo" style="display:flex;align-items:center;justify-content:space-between;">
+        <span>Controle de Pauta · Empresas SJ</span>
+        <button onclick="openHistory()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.75);font-size:11px;font-weight:600;font-family:'Inter',sans-serif;padding:5px 12px;cursor:pointer;transition:all .15s;" onmouseover="this.style.background='rgba(255,255,255,.2)'" onmouseout="this.style.background='rgba(255,255,255,.1)'">📋 Histórico</button>
+      </div>
+      <h1>Nova Reunião</h1>
+      <p>Defina o contexto, os participantes e a pauta antes de começar.</p>
+    </div>
 
-  <!-- HEADER -->
-  <div id="header">
-    <div class="logo">⏱</div>
-    <div class="title" id="hdr-title">MEETING TIMER</div>
-    <button id="btn-play-header" onclick="toggleRun()">▶ Iniciar</button>
+    <div id="setup-body">
+
+      <!-- Contexto -->
+      <div class="setup-section">
+        <div class="setup-section-title">Contexto da reunião</div>
+        <div class="setup-field">
+          <div class="setup-label">Objetivo da agenda</div>
+          <textarea class="setup-textarea" id="s-objetivo" rows="2" placeholder="O que precisamos decidir ou resolver nesta reunião?"></textarea>
+        </div>
+        <div class="setup-field">
+          <div class="setup-label">Critério de sucesso</div>
+          <textarea class="setup-textarea" id="s-criterio" rows="2" placeholder="Como saberemos que a reunião foi bem-sucedida?"></textarea>
+        </div>
+      </div>
+
+      <!-- Horário -->
+      <div class="setup-section">
+        <div class="setup-section-title">Horário</div>
+        <div class="setup-row">
+          <div class="setup-field">
+            <div class="setup-label">Início</div>
+            <input class="setup-input" type="time" id="s-inicio" />
+          </div>
+          <div class="setup-field">
+            <div class="setup-label">Fim previsto</div>
+            <input class="setup-input" type="time" id="s-fim" />
+          </div>
+          <div class="setup-field">
+            <div class="setup-label">Data</div>
+            <input class="setup-input" type="date" id="s-data" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Participantes -->
+      <div class="setup-section">
+        <div class="setup-section-title">Participantes</div>
+        <div class="setup-label">Digite um nome e pressione Enter ou vírgula</div>
+        <div id="tags-wrap" onclick="document.getElementById('tag-input').focus()">
+          <input id="tag-input" placeholder="Nome do participante…" autocomplete="off" />
+        </div>
+      </div>
+
+      <!-- Pautas -->
+      <div class="setup-section">
+        <div class="setup-section-title">Pautas</div>
+        <div id="setup-pautas"><div class="setup-empty">Nenhuma pauta adicionada ainda.</div></div>
+        <div id="setup-add-row">
+          <div class="setup-field">
+            <input class="setup-input" type="text" id="s-topic" placeholder="Tema / assunto" />
+          </div>
+          <div class="setup-field" style="max-width:90px">
+            <input class="setup-input" type="number" id="s-min" placeholder="min" min="1" max="999" />
+          </div>
+          <button class="setup-add-btn" onclick="setupAddPauta()">+ Adicionar</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="setup-footer">
+      <button id="btn-launch" onclick="launchMeeting()" disabled>▶ Iniciar Reunião</button>
+      <div id="launch-summary">Adicione ao menos uma pauta para iniciar</div>
+    </div>
   </div>
+</div>
 
-  <!-- TABS -->
-  <div id="tabs">
-    <div class="tab active" onclick="switchTab('timer')">Timer</div>
-    <div class="tab" onclick="switchTab('agenda')">Pautas</div>
-    <div class="tab" onclick="switchTab('config')">Config</div>
+<!-- ══ HISTÓRICO OVERLAY ══ -->
+<div id="history-overlay">
+  <div id="history-box">
+    <div id="history-header">
+      <h2>📋 Histórico de Reuniões</h2>
+      <button class="hh-close" onclick="closeHistory()">✕ Fechar</button>
+    </div>
+    <div id="history-body"></div>
   </div>
+</div>
 
-  <!-- TIMER -->
-  <div class="panel active" id="panel-timer">
+<!-- ══ DETALHE HISTÓRICO ══ -->
+<div id="hist-detail-overlay">
+  <div id="hist-detail-box">
+    <div id="dash-header" style="border-radius:20px 20px 0 0">
+      <h2>📊 Relatório da Reunião</h2>
+      <div class="dh-sub" id="hist-dash-date">—</div>
+      <div class="dh-meta" id="hist-dash-meta"></div>
+    </div>
+    <div id="hist-dash-body" style="padding:22px 28px;display:flex;flex-direction:column;gap:18px;"></div>
+    <div style="padding:0 28px 24px;">
+      <button class="dash-close-btn" onclick="closeHistDetail()">✕ Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOPBAR (app) ══ -->
+<div id="topbar">
+  <div class="logo">Controle de Pauta <span>Empresas SJ</span></div>
+  <div class="tb-spacer"></div>
+  <div id="meeting-status">
+    <div id="status-dot"></div>
+    <div id="status-txt">Em andamento</div>
+  </div>
+  <div id="tb-name"></div>
+  <button class="tb-btn red" id="tb-end-btn" onclick="endMeeting()">⏹ Encerrar</button>
+  <button class="tb-btn" onclick="switchConfig()">⚙</button>
+</div>
+
+<!-- ══ APP LAYOUT ══ -->
+<div id="app-layout">
+
+  <!-- LEFT -->
+  <div id="left">
 
     <div id="end-alert">
-      <div class="ea-title">⏰ Tempo esgotado!</div>
-      <div class="ea-sub" id="ea-sub">—</div>
+      <div class="ea-t">⏰ Tempo do bloco esgotado!</div>
+      <div class="ea-s" id="ea-sub">—</div>
     </div>
 
-    <div id="active-card">
-      <div id="active-eyebrow">EM ANDAMENTO</div>
-      <div id="active-topic">Nenhuma pauta ainda</div>
-      <div id="active-presenter"></div>
-
-      <div id="clock-row">
-        <div id="ring-wrap">
-          <svg viewBox="0 0 64 64">
-            <circle class="ring-bg" cx="32" cy="32" r="27"/>
-            <circle class="ring-fg" id="ring-fg" cx="32" cy="32" r="27"
-              stroke-dasharray="169.6" stroke-dashoffset="0" stroke="#6c63ff"/>
-          </svg>
-          <div id="ring-pct">100%</div>
+    <div id="gen-wrap">
+      <div id="gen-lbl">Cronômetro da reunião</div>
+      <div id="gen-ring-svg-wrap">
+        <svg viewBox="0 0 160 160">
+          <circle class="gr-bg" cx="80" cy="80" r="68"/>
+          <circle class="gr-plan" id="gr-plan" cx="80" cy="80" r="68" stroke-dasharray="427.3" stroke-dashoffset="0" stroke="#132044"/>
+          <circle class="gr-real" id="gr-real" cx="80" cy="80" r="62" stroke-dasharray="4 5" stroke-dashoffset="0" stroke="#dc2626" opacity="0"/>
+        </svg>
+        <div id="gen-center">
+          <div id="gen-plan-clk">00:00</div>
+          <div id="gen-real-clk">real: 00:00</div>
+          <div id="gen-adh-lbl">—</div>
         </div>
-        <div id="clock">00:00</div>
       </div>
-
-      <div id="bar-wrap"><div id="bar"></div></div>
-
-      <div id="controls">
-        <button class="ctrl" onclick="prevBlock()">⬅ Ant.</button>
-        <button class="ctrl primary" id="main-btn" onclick="toggleRun()">▶ Iniciar</button>
-        <button class="ctrl" onclick="nextBlock()">Próx. ➡</button>
-        <button class="ctrl red" onclick="resetCurrent()" title="Resetar">↺</button>
+      <div id="gen-legend">
+        <div class="leg"><div class="leg-dot" style="background:var(--navy)"></div>Planejado</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--danger);border-radius:2px"></div>Estouro</div>
       </div>
     </div>
 
-    <div id="next-card">
+    <div id="active-block">
+      <div id="ab-eyebrow">EM ANDAMENTO</div>
+      <div id="ab-topic">—</div>
+      <div id="ab-presenter"></div>
+      <div id="block-dual">
+        <div id="br-wrap">
+          <svg viewBox="0 0 50 50">
+            <circle class="br-bg" cx="25" cy="25" r="20"/>
+            <circle class="br-plan" id="br-plan" cx="25" cy="25" r="20" stroke-dasharray="125.7" stroke-dashoffset="0" stroke="#f5c800"/>
+            <circle class="br-real" id="br-real" cx="25" cy="25" r="16" stroke-dasharray="3 4" stroke-dashoffset="0" stroke="#ff9090" opacity="0"/>
+          </svg>
+          <div id="br-pct">100%</div>
+        </div>
+        <div id="block-clocks">
+          <div class="bc-row"><span class="bc-tag plan">Plan</span><div id="bl-plan">00:00</div></div>
+          <div class="bc-row"><span class="bc-tag real" id="real-tag">Real</span><div id="bl-real">00:00</div></div>
+        </div>
+      </div>
+      <div id="block-bars">
+        <div class="bbar-row"><span class="bbar-lbl">Plan</span><div class="bbar-track"><div class="bbar-fill" id="bb-plan" style="width:100%;background:var(--yellow)"></div></div></div>
+        <div class="bbar-row"><span class="bbar-lbl">Real</span><div class="bbar-track"><div class="bbar-fill" id="bb-real" style="width:0;background:rgba(220,38,38,.6)"></div></div></div>
+      </div>
+      <div id="block-ctrls">
+        <button class="bctrl" onclick="prevBlock()">⬅</button>
+        <button class="bctrl prim" id="bl-btn" onclick="toggleBlock()">▶ Play</button>
+        <button class="bctrl" onclick="nextBlock()">➡</button>
+        <button class="bctrl red" onclick="resetCurBlock()">↺</button>
+      </div>
+    </div>
+
+    <div id="next-block">
       <div style="flex:1;min-width:0">
-        <div class="nc-label">A seguir</div>
-        <div class="nc-topic" id="nc-topic">—</div>
+        <div class="nb-lbl">A seguir</div>
+        <div class="nb-topic" id="nb-topic">—</div>
       </div>
-      <div class="nc-dur" id="nc-dur"></div>
+      <div class="nb-dur" id="nb-dur"></div>
     </div>
 
-    <div id="agenda-mini">
-      <div id="agenda-mini-header">
-        <span>Agenda</span>
-        <span id="agenda-total" style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text2)"></span>
+    <div id="adh-box">
+      <div id="adh-title">Aderência ao planejamento</div>
+      <div id="adh-track"><div id="adh-fill"></div></div>
+      <div id="adh-row">
+        <div id="adh-pct">—</div>
+        <div id="adh-detail">—</div>
       </div>
-      <div id="agenda-mini-list"></div>
+    </div>
+
+    <div id="stats">
+      <div class="sc"><div class="sv" id="st-plan">0min</div><div class="sl">Planejado</div></div>
+      <div class="sc"><div class="sv" id="st-real">0min</div><div class="sl">Real</div></div>
+      <div class="sc"><div class="sv" id="st-over">+0min</div><div class="sl">Estouro total</div></div>
+      <div class="sc"><div class="sv" id="st-remain">0</div><div class="sl">Blocos restantes</div></div>
     </div>
 
   </div>
 
-  <!-- AGENDA -->
-  <div class="panel" id="panel-agenda">
+  <!-- RIGHT -->
+  <div id="right">
+
+    <!-- Card contexto (leitura) -->
+    <div id="meeting-context-card">
+      <div id="mcc-header">
+        <span id="mcc-title">—</span>
+        <div class="mcc-meta" id="mcc-meta">—</div>
+      </div>
+      <div id="mcc-body"></div>
+    </div>
+
+    <div id="list-header">
+      <h2>Pautas da reunião</h2>
+      <button id="btn-add-toggle" onclick="toggleForm()">+ Nova pauta</button>
+    </div>
     <div id="add-form">
-      <div class="form-title">Nova pauta</div>
-      <input type="text" id="inp-topic" placeholder="Tema / assunto" />
-      <input type="text" id="inp-presenter" placeholder="Responsável (opcional)" />
+      <div class="form-title">Adicionar pauta</div>
+      <input class="finput" type="text" id="inp-topic" placeholder="Tema / assunto" />
+      <input class="finput" type="text" id="inp-presenter" placeholder="Responsável (opcional)" />
       <div class="form-row">
-        <input type="number" id="inp-min" placeholder="min" min="1" max="999" style="width:70px" />
-        <button class="btn-add" onclick="addPauta()">+ Adicionar</button>
+        <input class="finput" type="number" id="inp-min" placeholder="min" min="1" max="999" style="width:80px;flex-shrink:0" />
+        <button class="btn-submit" onclick="addPauta()">+ Adicionar</button>
       </div>
     </div>
     <div id="pauta-list"></div>
+
   </div>
+</div>
 
-  <!-- CONFIG -->
-  <div class="panel" id="panel-config">
-
-    <div id="window-tip">
-      <div class="tip-icon">💡</div>
-      <div>Para usar ao lado do PowerPoint: pressione <strong>F11</strong> para sair da tela cheia, depois redimensione esta janela do Chrome para o canto da tela.</div>
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div id="dash-box">
+    <div id="dash-header">
+      <h2>📊 Relatório da Reunião</h2>
+      <div class="dh-sub" id="dash-date">—</div>
+      <div class="dh-meta" id="dash-meta"></div>
     </div>
-
-    <div class="cfg-box">
-      <div class="cfg-head">Reunião</div>
-      <div class="cfg-row"><div class="cfg-lbl">Total de blocos</div><div class="cfg-val" id="cfg-count">0</div></div>
-      <div class="cfg-row"><div class="cfg-lbl">Duração total</div><div class="cfg-val" id="cfg-total">0 min</div></div>
-      <div class="cfg-row"><div class="cfg-lbl">Bloco atual</div><div class="cfg-val" id="cfg-cur">—</div></div>
-    </div>
-
-    <div class="cfg-box">
-      <div class="cfg-head">Alertas</div>
-      <div class="cfg-row">
-        <div class="cfg-lbl">Avisar faltando</div>
-        <div style="display:flex;gap:5px;align-items:center">
-          <input type="number" id="cfg-warn" value="2" min="1" max="30" style="width:52px;text-align:center" onchange="saveConfig()">
-          <span style="font-size:11px;color:var(--text2)">min</span>
+    <div id="dash-body">
+      <div id="dash-score">
+        <div id="dash-score-num">—</div>
+        <div id="dash-score-info">
+          <div id="dash-score-label">—</div>
+          <div id="dash-score-sub">—</div>
+          <div id="dash-score-bar-wrap"><div id="dash-score-bar"></div></div>
         </div>
       </div>
-      <div class="cfg-row">
-        <div class="cfg-lbl">Som ao terminar</div>
-        <button class="cBtn" id="btn-sound" onclick="toggleSound()">🔔 Ativo</button>
-      </div>
+      <div id="dash-context"></div>
+      <div id="dash-summary"></div>
+      <div id="dash-table-title">Desempenho por bloco</div>
+      <div id="dash-table"></div>
     </div>
-
-    <div class="cfg-box">
-      <div class="cfg-head">Dados</div>
-      <div class="cfg-row">
-        <div class="cfg-lbl">Exportar pauta</div>
-        <button class="cBtn" onclick="exportData()">⬇ JSON</button>
-      </div>
-      <div class="cfg-row">
-        <div class="cfg-lbl">Importar pauta</div>
-        <button class="cBtn" onclick="document.getElementById('imp').click()">⬆ JSON</button>
-        <input type="file" id="imp" accept=".json" style="display:none" onchange="importData(event)">
-      </div>
-      <div class="cfg-row">
-        <div class="cfg-lbl">Limpar tudo</div>
-        <button class="cBtn red" onclick="clearAll()">🗑 Limpar</button>
-      </div>
+    <div id="dash-footer">
+      <button class="dash-close-btn" onclick="closeDashboard()">✓ Fechar e iniciar nova reunião</button>
     </div>
-
-    <div class="cfg-box">
-      <div class="cfg-head">Atalhos de teclado</div>
-      <div class="cfg-row"><div class="cfg-lbl">Espaço</div><div class="cfg-val">Play / Pause</div></div>
-      <div class="cfg-row"><div class="cfg-lbl">→</div><div class="cfg-val">Próximo bloco</div></div>
-      <div class="cfg-row"><div class="cfg-lbl">←</div><div class="cfg-lbl">Bloco anterior</div></div>
-      <div class="cfg-row"><div class="cfg-lbl">R</div><div class="cfg-val">Resetar atual</div></div>
-    </div>
-
   </div>
+</div>
 
+<!-- CONFIG -->
+<div id="config-view">
+  <div style="max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:16px;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+      <h2 style="font-size:18px;font-weight:800;color:var(--navy)">Configurações</h2>
+      <div style="flex:1"></div>
+      <button class="tb-btn" style="background:var(--navy);border-color:var(--navy);color:#fff" onclick="switchConfig()">← Voltar</button>
+    </div>
+    <div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">
+      <div style="padding:8px 16px;font-size:9px;font-weight:700;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid var(--border);">Alertas</div>
+      <div style="display:flex;align-items:center;padding:12px 16px;gap:10px;border-bottom:1px solid var(--border);">
+        <div style="flex:1;font-size:12px;color:var(--text2)">Avisar faltando</div>
+        <input type="number" id="cfg-warn" value="2" min="1" max="30" class="finput" style="width:60px;text-align:center" onchange="saveConfig()">
+        <span style="font-size:11px;color:var(--text2)">min</span>
+      </div>
+      <div style="display:flex;align-items:center;padding:12px 16px;gap:10px;">
+        <div style="flex:1;font-size:12px;color:var(--text2)">Som ao terminar bloco</div>
+        <button class="tb-btn" style="background:var(--navy);border-color:var(--navy);color:var(--yellow)" id="btn-sound" onclick="toggleSound()">🔔 Ativo</button>
+      </div>
+    </div>
+    <div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">
+      <div style="padding:8px 16px;font-size:9px;font-weight:700;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid var(--border);">Atalhos</div>
+      <div style="padding:12px 16px;display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--text2)">Espaço</span><span style="font-family:monospace;color:var(--text3)">Play / Pause bloco</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--text2)">→</span><span style="font-family:monospace;color:var(--text3)">Próximo bloco</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--text2)">←</span><span style="font-family:monospace;color:var(--text3)">Bloco anterior</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--text2)">R</span><span style="font-family:monospace;color:var(--text3)">Resetar bloco atual</span></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL EDITAR -->
 <div id="modal">
   <div id="modal-box">
     <h3>✏️ Editar pauta</h3>
-    <div>
-      <div class="mlabel">Tema</div>
-      <input type="text" id="edit-topic" />
-    </div>
-    <div>
-      <div class="mlabel">Responsável</div>
-      <input type="text" id="edit-presenter" placeholder="opcional" />
-    </div>
-    <div>
-      <div class="mlabel">Duração (minutos)</div>
-      <input type="number" id="edit-min" min="1" max="999" style="width:100px" />
-    </div>
-    <div class="mrow">
-      <button class="mBtn cancel" onclick="closeModal()">Cancelar</button>
-      <button class="mBtn" onclick="saveEdit()">Salvar</button>
+    <div><div class="mlbl">Tema</div><input class="finput" type="text" id="edit-topic"/></div>
+    <div><div class="mlbl">Responsável</div><input class="finput" type="text" id="edit-presenter" placeholder="opcional"/></div>
+    <div><div class="mlbl">Duração (minutos)</div><input class="finput" type="number" id="edit-min" min="1" style="width:120px"/></div>
+    <div class="mrow2">
+      <button class="mbtn cancel" onclick="closeModal()">Cancelar</button>
+      <button class="mbtn" onclick="saveEdit()">Salvar</button>
     </div>
   </div>
 </div>
 
 <script>
-// ═══════════════════════════════
-//  STATE
-// ═══════════════════════════════
-let pautas      = []
-let currentIdx  = 0
-let secondsLeft = 0
-let totalSecs   = 0
-let running     = false
-let timerRef    = null
-let soundOn     = true
-let warnMin     = 2
-let editId      = null
-let dragSrc     = null
-let activeTab   = 'timer'
+// ══════════════════════════════
+//  SUPABASE
+// ══════════════════════════════
+const SUPA_URL = 'https://fwrlyjmxadayjttgurxo.supabase.co'
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3cmx5am14YWRheWp0dGd1cnhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTMxNjAsImV4cCI6MjA5NTg2OTE2MH0.xnOqehr7k3UPAWPi4oXoy1_Q3hFV1bBayIHHITBNExw'
 
-// ═══════════════════════════════
-//  INIT
-// ═══════════════════════════════
-;(function init() {
-  try {
-    const p = localStorage.getItem('mt2_pautas')
-    if (p) pautas = JSON.parse(p)
-    const idx = localStorage.getItem('mt2_idx')
-    if (idx !== null) currentIdx = Math.min(parseInt(idx), Math.max(0, pautas.length - 1))
-    const s = localStorage.getItem('mt2_sound')
-    if (s !== null) soundOn = s === 'true'
-    const w = localStorage.getItem('mt2_warn')
-    if (w !== null) warnMin = parseInt(w)
-  } catch(e) {}
-  resetBlock()
-  renderAll()
-})()
-
-// ═══════════════════════════════
-//  PERSIST
-// ═══════════════════════════════
-function persist() {
-  localStorage.setItem('mt2_pautas', JSON.stringify(pautas))
-  localStorage.setItem('mt2_idx', currentIdx)
-  localStorage.setItem('mt2_sound', soundOn)
-  localStorage.setItem('mt2_warn', warnMin)
-}
-
-function saveConfig() {
-  warnMin = parseInt(document.getElementById('cfg-warn').value) || 2
-  persist()
-}
-
-// ═══════════════════════════════
-//  TABS
-// ═══════════════════════════════
-function switchTab(name) {
-  activeTab = name
-  document.querySelectorAll('.tab').forEach((t, i) => {
-    t.classList.toggle('active', ['timer','agenda','config'][i] === name)
-  })
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'))
-  document.getElementById('panel-' + name).classList.add('active')
-}
-
-// ═══════════════════════════════
-//  PAUTA CRUD
-// ═══════════════════════════════
-function addPauta() {
-  const topic     = document.getElementById('inp-topic').value.trim()
-  const presenter = document.getElementById('inp-presenter').value.trim()
-  const minutes   = parseInt(document.getElementById('inp-min').value)
-  if (!topic)   { highlight('inp-topic'); return }
-  if (!minutes) { highlight('inp-min');   return }
-  pautas.push({ id: Date.now(), topic, presenter, minutes })
-  persist()
-  renderAll()
-  if (pautas.length === 1) resetBlock()
-  document.getElementById('inp-topic').value = ''
-  document.getElementById('inp-presenter').value = ''
-  document.getElementById('inp-min').value = ''
-  document.getElementById('inp-topic').focus()
-}
-
-function deletePauta(id) {
-  const i = pautas.findIndex(p => p.id === id)
-  if (i === -1) return
-  pautas.splice(i, 1)
-  if (currentIdx >= pautas.length) currentIdx = Math.max(0, pautas.length - 1)
-  stop()
-  resetBlock()
-  persist()
-  renderAll()
-}
-
-function jumpTo(idx) {
-  currentIdx = idx
-  stop()
-  resetBlock()
-  persist()
-  renderAll()
-  switchTab('timer')
-}
-
-function openModal(id) {
-  const p = pautas.find(x => x.id === id)
-  if (!p) return
-  editId = id
-  document.getElementById('edit-topic').value = p.topic
-  document.getElementById('edit-presenter').value = p.presenter || ''
-  document.getElementById('edit-min').value = p.minutes
-  document.getElementById('modal').classList.add('show')
-}
-
-function closeModal() {
-  editId = null
-  document.getElementById('modal').classList.remove('show')
-}
-
-function saveEdit() {
-  const p = pautas.find(x => x.id === editId)
-  if (!p) return
-  const topic = document.getElementById('edit-topic').value.trim()
-  const presenter = document.getElementById('edit-presenter').value.trim()
-  const minutes = parseInt(document.getElementById('edit-min').value)
-  if (!topic || !minutes) return
-  p.topic = topic; p.presenter = presenter; p.minutes = minutes
-  const ei = pautas.findIndex(x => x.id === editId)
-  if (ei === currentIdx) resetBlock()
-  persist(); renderAll(); closeModal()
-}
-
-// ═══════════════════════════════
-//  DRAG & DROP
-// ═══════════════════════════════
-function onDragStart(e, idx) {
-  dragSrc = idx
-  setTimeout(() => e.target.classList.add('dragging'), 0)
-  e.dataTransfer.effectAllowed = 'move'
-}
-function onDragOver(e, idx) {
-  e.preventDefault()
-  document.querySelectorAll('.pcard').forEach((c, i) => c.classList.toggle('dragover', i === idx && i !== dragSrc))
-}
-function onDrop(e, idx) {
-  e.preventDefault()
-  if (dragSrc === null || dragSrc === idx) return
-  const moved = pautas.splice(dragSrc, 1)[0]
-  pautas.splice(idx, 0, moved)
-  if (dragSrc === currentIdx) currentIdx = idx
-  else if (dragSrc < currentIdx && idx >= currentIdx) currentIdx--
-  else if (dragSrc > currentIdx && idx <= currentIdx) currentIdx++
-  dragSrc = null
-  persist(); renderAll()
-}
-function onDragEnd() {
-  dragSrc = null
-  document.querySelectorAll('.pcard').forEach(c => c.classList.remove('dragging', 'dragover'))
-}
-function moveUp(idx)   { if (idx===0) return; swap(idx-1,idx); if(currentIdx===idx) currentIdx--; else if(currentIdx===idx-1) currentIdx++; persist(); renderAll() }
-function moveDown(idx) { if (idx>=pautas.length-1) return; swap(idx,idx+1); if(currentIdx===idx) currentIdx++; else if(currentIdx===idx+1) currentIdx--; persist(); renderAll() }
-function swap(a,b)     { [pautas[a],pautas[b]]=[pautas[b],pautas[a]] }
-
-// ═══════════════════════════════
-//  TIMER
-// ═══════════════════════════════
-function resetBlock() {
-  if (!pautas.length) { secondsLeft = 0; totalSecs = 0 }
-  else { if(currentIdx>=pautas.length) currentIdx=0; totalSecs = pautas[currentIdx].minutes * 60; secondsLeft = totalSecs }
-  hideAlert()
-  updateUI()
-}
-
-function toggleRun() { running ? pause() : start() }
-
-function start() {
-  if (!pautas.length) return
-  if (secondsLeft <= 0) resetBlock()
-  running = true
-  updatePlayBtns()
-  timerRef = setInterval(tick, 1000)
-}
-
-function pause() {
-  running = false
-  clearInterval(timerRef)
-  updatePlayBtns()
-}
-
-function stop() {
-  running = false
-  clearInterval(timerRef)
-  updatePlayBtns()
-}
-
-function tick() {
-  if (secondsLeft > 0) {
-    secondsLeft--
-    updateUI()
-    if (secondsLeft === warnMin * 60) flashColor('rgba(255,165,0,.1)')
-    if (secondsLeft === 0) onEnd()
+const db = {
+  headers: {
+    'apikey': SUPA_KEY,
+    'Authorization': `Bearer ${SUPA_KEY}`,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation'
+  },
+  async post(table, body) {
+    const r = await fetch(`${SUPA_URL}/rest/v1/${table}`, {
+      method: 'POST', headers: this.headers, body: JSON.stringify(body)
+    })
+    if (!r.ok) { console.error('POST error', table, await r.text()); return null }
+    return r.json()
+  },
+  async get(table, params='') {
+    const r = await fetch(`${SUPA_URL}/rest/v1/${table}?${params}`, { headers: this.headers })
+    if (!r.ok) { console.error('GET error', table, await r.text()); return [] }
+    return r.json()
+  },
+  async del(table, filter='') {
+    await fetch(`${SUPA_URL}/rest/v1/${table}?${filter}`, {
+      method: 'DELETE', headers: this.headers
+    })
   }
 }
 
-function onEnd() {
-  stop()
+async function saveToSupabase() {
+  try {
+    const totalPlanMin = Math.round(meetingPlanTotal / 60)
+    const totalRealMin = Math.round(meetingRealSecs / 60)
+    const totalOverMin = Math.max(0, totalRealMin - totalPlanMin)
+    const adhPct       = meetingRealSecs > 0
+      ? Math.min(100, Math.round(meetingPlanTotal / meetingRealSecs * 100)) : 100
+    const notaMedia    = pautas.filter(p => p.nota > 0).length > 0
+      ? parseFloat((pautas.reduce((a,p) => a + (p.nota||0), 0) / pautas.filter(p => p.nota > 0).length).toFixed(1))
+      : null
+
+    // Salva reunião
+    const rows = await db.post('reunioes', {
+      objetivo:      meeting.objetivo || null,
+      criterio:      meeting.criterio || null,
+      data:          meeting.data     || new Date().toISOString().slice(0,10),
+      inicio:        meeting.inicio   || null,
+      fim:           meeting.fim      || null,
+      participantes: meeting.participantes,
+      stats: { totalPlanMin, totalRealMin, totalOverMin, adhPct, notaMedia }
+    })
+    if (!rows || !rows[0]) return
+    const reuniaoId = rows[0].id
+
+    // Salva pautas
+    const pautasPayload = pautas.map((p, i) => ({
+      reuniao_id: reuniaoId,
+      ordem:      i,
+      topic:      p.topic,
+      presenter:  p.presenter || null,
+      minutes:    p.minutes,
+      real_secs:  p.realSecs || 0,
+      nota:       p.nota     || 0,
+      report:     p.report   || null
+    }))
+    await db.post('pautas_reuniao', pautasPayload)
+    console.log('✅ Reunião salva:', reuniaoId)
+    return reuniaoId
+  } catch(e) {
+    console.warn('⚠️ Supabase save error:', e)
+  }
+}
+
+async function loadHistoryFromSupabase() {
+  try {
+    const reunioes = await db.get('reunioes', 'order=created_at.desc&limit=50')
+    if (!reunioes?.length) return []
+    const result = []
+    for (const r of reunioes) {
+      const ps = await db.get('pautas_reuniao', `reuniao_id=eq.${r.id}&order=ordem.asc`)
+      result.push({
+        id:      r.id,
+        savedAt: r.created_at,
+        meeting: {
+          objetivo:      r.objetivo,
+          criterio:      r.criterio,
+          data:          r.data,
+          inicio:        r.inicio,
+          fim:           r.fim,
+          participantes: r.participantes || []
+        },
+        pautas: ps.map(p => ({
+          topic:     p.topic,
+          presenter: p.presenter,
+          minutes:   p.minutes,
+          realSecs:  p.real_secs,
+          nota:      p.nota,
+          report:    p.report
+        })),
+        stats: r.stats || {}
+      })
+    }
+    return result
+  } catch(e) {
+    console.warn('⚠️ Supabase load error:', e)
+    return []
+  }
+}
+
+async function deleteFromSupabase(id) {
+  try { await db.del('reunioes', `id=eq.${id}`) }
+  catch(e) { console.warn('⚠️ Supabase delete error:', e) }
+}
+// ══════════════════════════════
+//  SETUP STATE
+// ══════════════════════════════
+let meeting = {
+  objetivo:'', criterio:'', inicio:'', fim:'', data:'',
+  participantes:[], // array de strings
+}
+let setupPautas = [] // {topic, minutes} — antes de lançar
+
+// ══════════════════════════════
+//  SETUP: PARTICIPANTES (TAGS)
+// ══════════════════════════════
+const tagInput = document.getElementById('tag-input')
+tagInput.addEventListener('keydown', e => {
+  if (e.key==='Enter' || e.key===',') { e.preventDefault(); addTag(tagInput.value.trim()) }
+  if (e.key==='Backspace' && !tagInput.value) removeLastTag()
+})
+tagInput.addEventListener('blur', () => { if(tagInput.value.trim()) addTag(tagInput.value.trim()) })
+
+function addTag(name) {
+  if (!name || meeting.participantes.includes(name)) { tagInput.value=''; return }
+  meeting.participantes.push(name)
+  tagInput.value=''
+  renderTags()
+}
+function removeTag(name) {
+  meeting.participantes = meeting.participantes.filter(p=>p!==name)
+  renderTags()
+}
+function removeLastTag() {
+  meeting.participantes.pop()
+  renderTags()
+}
+function renderTags() {
+  const wrap = document.getElementById('tags-wrap')
+  wrap.querySelectorAll('.tag').forEach(t=>t.remove())
+  meeting.participantes.forEach(name => {
+    const t = document.createElement('div')
+    t.className = 'tag'
+    t.innerHTML = `${esc(name)}<span class="tag-x" onclick="removeTag('${esc(name)}')">✕</span>`
+    wrap.insertBefore(t, tagInput)
+  })
+}
+
+// ══════════════════════════════
+//  SETUP: PAUTAS
+// ══════════════════════════════
+function setupAddPauta() {
+  const topic = document.getElementById('s-topic').value.trim()
+  const min   = parseInt(document.getElementById('s-min').value)
+  if (!topic || !min) return
+  setupPautas.push({ topic, minutes: min })
+  document.getElementById('s-topic').value = ''
+  document.getElementById('s-min').value = ''
+  document.getElementById('s-topic').focus()
+  renderSetupPautas()
+  updateLaunchBtn()
+}
+function setupRemovePauta(idx) {
+  setupPautas.splice(idx, 1)
+  renderSetupPautas()
+  updateLaunchBtn()
+}
+function renderSetupPautas() {
+  const el = document.getElementById('setup-pautas')
+  if (!setupPautas.length) { el.innerHTML='<div class="setup-empty">Nenhuma pauta adicionada ainda.</div>'; return }
+  el.innerHTML = setupPautas.map((p,i) => `
+    <div class="sp-row" id="sp-row-${i}">
+      <div class="sp-num">${i+1}</div>
+      <div class="sp-topic">${esc(p.topic)}</div>
+      <div class="sp-dur">${p.minutes}min</div>
+      <button class="sp-edit" title="Editar" onclick="setupEditPauta(${i})">✏</button>
+      <button class="sp-del"  title="Remover" onclick="setupRemovePauta(${i})">✕</button>
+      <div class="sp-edit-fields">
+        <input class="sp-edit-inp" id="sp-inp-topic-${i}" type="text" value="${esc(p.topic)}" placeholder="Tema" />
+        <input class="sp-edit-inp sp-edit-min" id="sp-inp-min-${i}" type="number" value="${p.minutes}" min="1" max="999" placeholder="min" />
+        <button class="sp-save-btn" onclick="setupSavePauta(${i})">Salvar</button>
+        <button class="sp-cancel-btn" onclick="setupCancelEdit(${i})">Cancelar</button>
+      </div>
+    </div>
+  `).join('')
+}
+
+function setupEditPauta(idx) {
+  // fecha qualquer edição aberta
+  document.querySelectorAll('.sp-row.editing').forEach(r => r.classList.remove('editing'))
+  const row = document.getElementById(`sp-row-${idx}`)
+  if (row) {
+    row.classList.add('editing')
+    setTimeout(() => { const inp = document.getElementById(`sp-inp-topic-${idx}`); if(inp) inp.focus() }, 50)
+  }
+}
+function setupCancelEdit(idx) {
+  const row = document.getElementById(`sp-row-${idx}`)
+  if (row) row.classList.remove('editing')
+}
+function setupSavePauta(idx) {
+  const topic = document.getElementById(`sp-inp-topic-${idx}`)?.value.trim()
+  const min   = parseInt(document.getElementById(`sp-inp-min-${idx}`)?.value)
+  if (!topic || !min) return
+  setupPautas[idx].topic   = topic
+  setupPautas[idx].minutes = min
+  renderSetupPautas()
+  updateLaunchBtn()
+}
+function updateLaunchBtn() {
+  const btn = document.getElementById('btn-launch')
+  const sum = document.getElementById('launch-summary')
+  const total = setupPautas.reduce((a,p)=>a+p.minutes,0)
+  if (!setupPautas.length) {
+    btn.disabled = true
+    sum.textContent = 'Adicione ao menos uma pauta para iniciar'
+  } else {
+    btn.disabled = false
+    sum.textContent = `${setupPautas.length} pauta${setupPautas.length>1?'s':''} · ${total} min planejados`
+  }
+}
+
+// Enter no setup
+document.getElementById('s-min').addEventListener('keydown', e=>{ if(e.key==='Enter') setupAddPauta() })
+document.getElementById('s-topic').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('s-min').focus() })
+
+// Data padrão = hoje
+document.getElementById('s-data').value = new Date().toISOString().slice(0,10)
+// Hora padrão = agora
+const now = new Date()
+const hh = String(now.getHours()).padStart(2,'0')
+const mm = String(now.getMinutes()).padStart(2,'0')
+document.getElementById('s-inicio').value = `${hh}:${mm}`
+
+// ══════════════════════════════
+//  RUNTIME STATE
+// ══════════════════════════════
+let pautas       = []  // {id, topic, presenter, minutes, realSecs, nota}
+let curIdx       = 0
+let planSecs     = 0
+let planTotal    = 0
+let blockReal    = 0
+let blockRunning = false
+let isOver       = false
+let meetingRealSecs = 0
+let meetingPlanTotal = 0
+let meetingRef   = null
+let blockRef     = null
+let meetingStart = null
+let soundOn      = true
+let warnMin      = 2
+let editId       = null
+let dragSrc      = null
+let formOpen     = false
+let configOpen   = false
+
+// ══════════════════════════════
+//  LAUNCH
+// ══════════════════════════════
+function launchMeeting() {
+  // Captura campos
+  meeting.objetivo  = document.getElementById('s-objetivo').value.trim()
+  meeting.criterio  = document.getElementById('s-criterio').value.trim()
+  meeting.inicio    = document.getElementById('s-inicio').value
+  meeting.fim       = document.getElementById('s-fim').value
+  meeting.data      = document.getElementById('s-data').value
+
+  // Monta pautas
+  pautas = setupPautas.map((p,i) => ({
+    id: Date.now()+i, topic:p.topic, presenter:'',
+    minutes:p.minutes, realSecs:0, nota:0
+  }))
+
+  meetingPlanTotal = pautas.reduce((a,p)=>a+p.minutes*60,0)
+  meetingRealSecs  = 0
+  curIdx = 0
+  meetingStart = new Date()
+
+  // Mostra app
+  document.getElementById('setup-screen').style.display = 'none'
+  document.getElementById('topbar').style.display = 'flex'
+  document.getElementById('app-layout').style.display = 'grid'
+
+  // Status
+  document.getElementById('status-dot').className = 'running'
+  document.getElementById('status-txt').textContent = 'Em andamento'
+
+  // Topbar name
+  document.getElementById('tb-name').textContent =
+    meeting.objetivo ? meeting.objetivo.slice(0,30) : 'Reunião'
+
+  // Card contexto
+  renderContextCard()
+
+  // Cronômetro geral (nunca para)
+  clearInterval(meetingRef)
+  meetingRef = setInterval(()=>{ meetingRealSecs++; updateUI() }, 1000)
+
+  loadBlock()
+  renderAll()
+}
+
+function renderContextCard() {
+  const dataFmt = meeting.data
+    ? new Date(meeting.data+'T12:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})
+    : ''
+  document.getElementById('mcc-title').textContent = meeting.objetivo || 'Reunião'
+  document.getElementById('mcc-meta').textContent  = [dataFmt, meeting.inicio&&meeting.fim?`${meeting.inicio} – ${meeting.fim}`:meeting.inicio].filter(Boolean).join(' · ')
+
+  const body = document.getElementById('mcc-body')
+  let html = ''
+  if (meeting.criterio) html += `
+    <div class="mcc-field full">
+      <div class="mcc-lbl">Critério de sucesso</div>
+      <div class="mcc-val">${esc(meeting.criterio)}</div>
+    </div>`
+  if (meeting.participantes.length) html += `
+    <div class="mcc-field full">
+      <div class="mcc-lbl">Participantes</div>
+      <div class="mcc-val">${meeting.participantes.map(p=>`<span class="mcc-tag">${esc(p)}</span>`).join('')}</div>
+    </div>`
+  body.innerHTML = html || '<div style="padding:10px 0;font-size:12px;color:var(--text3)">Sem informações adicionais.</div>'
+  if (html) body.style.padding = '12px 16px'
+}
+
+// ══════════════════════════════
+//  BLOCK CONTROL
+// ══════════════════════════════
+// Cada pauta tem seu próprio realSecs acumulado.
+// blockReal = segundos reais gastos no bloco ATUAL (desde que foi aberto).
+// planSecs  = segundos planejados restantes no bloco ATUAL (regressivo).
+// blockRunning = true só quando o usuário clicou Play no tema atual.
+// meetingRef roda SEMPRE desde launchMeeting até endMeeting.
+
+function loadBlock() {
+  // Para o timer do bloco anterior (sem resetar os dados dele)
+  clearInterval(blockRef)
+  blockRunning = false
+
+  if (!pautas.length) {
+    planSecs=0; planTotal=0; blockReal=0; isOver=false
+    updateUI(); updateBtns(); return
+  }
+  if (curIdx >= pautas.length) curIdx = 0
+
+  const p = pautas[curIdx]
+  planTotal = p.minutes * 60
+  blockReal = p.realSecs || 0          // retoma de onde parou
+  planSecs  = Math.max(0, planTotal - blockReal)  // regressivo já descontado
+  isOver    = blockReal >= planTotal
+
+  hideAlert()
+  updateUI()
+  updateBtns()
+}
+
+function toggleBlock() {
+  if (!pautas.length) return
+  blockRunning ? pauseBlock() : playBlock()
+}
+
+function playBlock() {
+  if (!pautas.length) return
+  blockRunning = true
+  updateBtns()
+  clearInterval(blockRef)
+  blockRef = setInterval(() => {
+    // Real sobe sempre
+    blockReal++
+    pautas[curIdx].realSecs = blockReal
+
+    // Planejado desce até zero
+    if (planSecs > 0) {
+      planSecs--
+      if (planSecs === warnMin * 60) flashColor('rgba(180,83,9,.08)')
+      if (planSecs === 0) { isOver = true; onPlanEnd() }
+    }
+    updateUI()
+  }, 1000)
+}
+
+function pauseBlock() {
+  blockRunning = false
+  clearInterval(blockRef)
+  // Salva progresso na pauta
+  if (pautas[curIdx]) pautas[curIdx].realSecs = blockReal
+  updateBtns()
+}
+
+function onPlanEnd() {
   showAlert()
-  flashColor('rgba(255,71,87,.15)', 3)
+  flashColor('rgba(220,38,38,.1)', 2)
   if (soundOn) beep()
+  // NÃO para o timer — continua contando estouro
 }
 
 function nextBlock() {
-  if (currentIdx < pautas.length - 1) { currentIdx++; stop(); resetBlock(); persist(); renderAll() }
+  if (curIdx < pautas.length - 1) {
+    pauseBlock()
+    curIdx++
+    loadBlock()
+    renderAll()
+  }
 }
+
 function prevBlock() {
-  if (currentIdx > 0) { currentIdx--; stop(); resetBlock(); persist(); renderAll() }
-}
-function resetCurrent() { stop(); resetBlock() }
-
-// ═══════════════════════════════
-//  UI
-// ═══════════════════════════════
-function updateUI() {
-  const CIRC = 169.6
-  const m = Math.floor(secondsLeft/60), s = secondsLeft%60
-  const timeStr = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
-  const ratio = totalSecs > 0 ? secondsLeft/totalSecs : 0
-  const pct = Math.round(ratio * 100)
-
-  document.getElementById('clock').textContent = timeStr
-  document.getElementById('bar').style.width = pct + '%'
-  document.getElementById('ring-fg').style.strokeDashoffset = CIRC * (1-ratio)
-  document.getElementById('ring-pct').textContent = pct + '%'
-
-  let color = '#6c63ff'
-  const clock = document.getElementById('clock')
-  const bar   = document.getElementById('bar')
-  if (ratio <= 0.15) {
-    color = '#ff4757'; clock.className = 'danger'; bar.style.background = '#ff4757'
-  } else if (ratio <= 0.30) {
-    color = '#ffa502'; clock.className = 'warn'; bar.style.background = '#ffa502'
-  } else {
-    clock.className = ''; bar.style.background = '#6c63ff'
+  if (curIdx > 0) {
+    pauseBlock()
+    curIdx--
+    loadBlock()
+    renderAll()
   }
-  document.getElementById('ring-fg').style.stroke = color
-
-  if (pautas.length && currentIdx < pautas.length) {
-    const cur = pautas[currentIdx]
-    document.getElementById('active-topic').textContent = cur.topic
-    document.getElementById('active-presenter').textContent = cur.presenter || ''
-    document.getElementById('hdr-title').textContent = cur.topic.toUpperCase().slice(0,20)
-  } else {
-    document.getElementById('active-topic').textContent = 'Nenhuma pauta ainda'
-    document.getElementById('active-presenter').textContent = ''
-    document.getElementById('hdr-title').textContent = 'MEETING TIMER'
-  }
-
-  const next = pautas[currentIdx+1]
-  document.getElementById('nc-topic').textContent = next ? next.topic : '— fim da reunião —'
-  document.getElementById('nc-dur').textContent   = next ? next.minutes+'min' : ''
 }
 
-function updatePlayBtns() {
-  const lbl = running ? '⏸ Pausar' : '▶ Iniciar'
-  document.getElementById('btn-play-header').textContent = lbl
-  document.getElementById('main-btn').textContent = lbl
-  document.getElementById('btn-play-header').className = running ? '' : 'paused'
-  if (running) { document.getElementById('main-btn').className = 'ctrl primary' }
-}
-
-function renderAll() {
-  renderPautas()
-  renderMini()
+function resetCurBlock() {
+  pauseBlock()
+  pautas[curIdx].realSecs = 0
+  blockReal = 0
+  planSecs  = planTotal
+  isOver    = false
+  hideAlert()
   updateUI()
-  updateConfig()
+  updateBtns()
 }
+
+function jumpTo(idx) {
+  pauseBlock()
+  curIdx = idx
+  loadBlock()
+  renderAll()
+}
+
+function endMeeting() {
+  if (!confirm('Encerrar a reunião e ver o relatório?')) return
+  clearInterval(meetingRef); clearInterval(blockRef)
+  blockRunning=false
+  pautas[curIdx].realSecs=blockReal
+  document.getElementById('status-dot').className='ended'
+  document.getElementById('status-txt').textContent='Encerrada'
+  updateBtns()
+  showDashboard()
+}
+
+// ══════════════════════════════
+//  ESTRELAS
+// ══════════════════════════════
+function setNota(idx, val) {
+  pautas[idx].nota = val
+  const rows = document.querySelectorAll('.prow')
+  if (rows[idx]) {
+    const stars = rows[idx].querySelectorAll('.star')
+    stars.forEach((s,i) => s.classList.toggle('lit', i<val))
+    const noteEl = rows[idx].querySelector('.star-note-val')
+    if(noteEl) noteEl.textContent = val>0?val+'/5':''
+    // Mostra campo de report quando há nota
+    const reportWrap = rows[idx].querySelector('.star-report-wrap')
+    if(reportWrap) {
+      reportWrap.classList.toggle('visible', val>0)
+      if(val>0) { const ta=reportWrap.querySelector('.star-report'); if(ta) ta.focus() }
+    }
+  }
+}
+
+function setReport(idx, val) {
+  if (pautas[idx]) pautas[idx].report = val.trim()
+}
+
+function renderStars(idx, nota) {
+  let html = '<div class="stars">'
+  for (let i=1;i<=5;i++) {
+    html += `<span class="star ${i<=nota?'lit':''}"
+      onclick="setNota(${idx},${i})"
+      onmouseover="hoverStars(${idx},${i})"
+      onmouseout="unhoverStars(${idx},${nota})">★</span>`
+  }
+  html += `</div><span class="star-note-val">${nota>0?nota+'/5':''}</span>`
+  return html
+}
+
+function hoverStars(idx, val) {
+  const rows = document.querySelectorAll('.prow')
+  if (!rows[idx]) return
+  rows[idx].querySelectorAll('.star').forEach((s,i) => s.classList.toggle('lit',i<val))
+}
+function unhoverStars(idx, nota) {
+  const rows = document.querySelectorAll('.prow')
+  if (!rows[idx]) return
+  rows[idx].querySelectorAll('.star').forEach((s,i) => s.classList.toggle('lit',i<nota))
+}
+
+// ══════════════════════════════
+//  UI UPDATE
+// ══════════════════════════════
+function fmt(s) { const a=Math.abs(s),m=Math.floor(a/60),sec=a%60; return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}` }
+function planColor(r) { return r<=0?'#dc2626':r<=.15?'#dc2626':r<=.30?'#b45309':'#132044' }
+function planColorY(r){ return r<=0?'#ff8080':r<=.15?'#ff8080':r<=.30?'#b45309':'#f5c800' }
+
+function updateUI() {
+  const CIRC_GEN=427.3, CIRC_BLK=125.7, CIRC_RI=100.5
+  const genLeft=Math.max(0,meetingPlanTotal-meetingRealSecs)
+  const genRatio=meetingPlanTotal>0?genLeft/meetingPlanTotal:0
+  const genOver=Math.max(0,meetingRealSecs-meetingPlanTotal)
+
+  const grPlan=document.getElementById('gr-plan')
+  if(grPlan){grPlan.style.strokeDashoffset=CIRC_GEN*(1-genRatio);grPlan.style.stroke=planColor(genRatio)}
+  const gpc=document.getElementById('gen-plan-clk')
+  if(gpc){gpc.textContent=fmt(genLeft);gpc.className=genRatio<=0?'danger':genRatio<=.15?'danger':genRatio<=.30?'warn':''}
+  const grc=document.getElementById('gen-real-clk')
+  if(grc){grc.textContent='real: '+fmt(meetingRealSecs);grc.className=genOver>0?'over':''}
+  const gr=document.getElementById('gr-real')
+  if(gr){if(genOver>0){gr.style.strokeDashoffset=CIRC_GEN*(1-Math.min(1,genOver/meetingPlanTotal));gr.style.opacity='.85'}else gr.style.opacity='0'}
+  const adhPct=meetingRealSecs>0?Math.min(100,Math.round(meetingPlanTotal/meetingRealSecs*100)):100
+  const gadh=document.getElementById('gen-adh-lbl'); if(gadh) gadh.textContent=adhPct+'% aderência'
+  const adhFill=document.getElementById('adh-fill')
+  if(adhFill){adhFill.style.width=adhPct+'%';adhFill.style.background=adhPct>=90?'var(--ok)':adhPct>=70?'var(--warn)':'var(--danger)'}
+  const adhPctEl=document.getElementById('adh-pct'); if(adhPctEl) adhPctEl.textContent=adhPct+'%'
+  const pMin=Math.round(meetingPlanTotal/60),rMin=Math.round(meetingRealSecs/60),oMin=Math.max(0,rMin-pMin)
+  const adhDet=document.getElementById('adh-detail')
+  if(adhDet) adhDet.innerHTML=`${pMin}min plan · ${rMin}min real${oMin>0?`<br><span style="color:var(--danger)">+${oMin}min estouro</span>`:''}`
+
+  const bRatio=planTotal>0?Math.max(0,planSecs/planTotal):0
+  const brPlan=document.getElementById('br-plan')
+  if(brPlan){brPlan.style.strokeDashoffset=CIRC_BLK*(1-bRatio);brPlan.style.stroke=planColorY(bRatio)}
+  const brPct=document.getElementById('br-pct'); if(brPct) brPct.textContent=Math.round(bRatio*100)+'%'
+  const bp=document.getElementById('bl-plan')
+  if(bp){bp.textContent=fmt(planSecs);bp.className=isOver?'over':bRatio<=.15?'danger':bRatio<=.30?'warn':''}
+  const bbPlan=document.getElementById('bb-plan')
+  if(bbPlan){bbPlan.style.width=Math.round(bRatio*100)+'%';bbPlan.style.background=planColorY(bRatio)}
+  const bOverSecs=Math.max(0,blockReal-planTotal)
+  const bRealRatio=planTotal>0?Math.min(1,blockReal/planTotal):0
+  const brReal=document.getElementById('br-real')
+  if(brReal){if(bOverSecs>0){brReal.style.strokeDashoffset=CIRC_RI*(1-Math.min(1,bOverSecs/planTotal));brReal.style.opacity='.8'}else brReal.style.opacity='0'}
+  const brc=document.getElementById('bl-real')
+  if(brc){brc.textContent=fmt(blockReal);brc.className=bOverSecs>0?'over':''}
+  const rt=document.getElementById('real-tag')
+  if(rt){rt.className='bc-tag real'+(bOverSecs>0?' over-tag':'');rt.textContent=bOverSecs>0?'+'+fmt(bOverSecs):'Real'}
+  const bbReal=document.getElementById('bb-real')
+  if(bbReal){bbReal.style.width=Math.min(100,Math.round(bRealRatio*100))+'%';bbReal.style.background=bOverSecs>0?'var(--danger)':'rgba(220,38,38,.55)'}
+
+  if(pautas.length&&curIdx<pautas.length){
+    const cur=pautas[curIdx]
+    const abt=document.getElementById('ab-topic'); if(abt) abt.textContent=cur.topic
+    const abp=document.getElementById('ab-presenter'); if(abp) abp.textContent=cur.presenter||''
+    const tbn=document.getElementById('tb-name'); if(tbn) tbn.textContent=(meeting.objetivo||'Reunião').slice(0,30)
+  }
+  const nxt=pautas[curIdx+1]
+  const nbt=document.getElementById('nb-topic'); if(nbt) nbt.textContent=nxt?nxt.topic:'— fim da reunião —'
+  const nbd=document.getElementById('nb-dur'); if(nbd) nbd.textContent=nxt?nxt.minutes+'min':''
+  const totalOver=pautas.reduce((a,p,i)=>a+Math.max(0,(i===curIdx?blockReal:(p.realSecs||0))-p.minutes*60),0)
+  const stp=document.getElementById('st-plan'); if(stp) stp.textContent=Math.round(meetingPlanTotal/60)+'min'
+  const str=document.getElementById('st-real'); if(str) str.textContent=Math.round(meetingRealSecs/60)+'min'
+  const oe=document.getElementById('st-over')
+  if(oe){oe.textContent='+'+Math.round(totalOver/60)+'min';oe.className='sv'+(totalOver>0?' red':'')}
+  const srem=document.getElementById('st-remain'); if(srem) srem.textContent=Math.max(0,pautas.length-curIdx-1)
+
+  // Rows dinâmico
+  document.querySelectorAll('.prow').forEach((row,idx)=>{
+    const isCur=idx===curIdx,isDone=idx<curIdx
+    const p=pautas[idx];if(!p)return
+    const rr=isCur?blockReal:(p.realSecs||0),ro=Math.max(0,rr-p.minutes*60)
+    row.classList.toggle('is-current',isCur)
+    row.classList.toggle('done',isDone)
+    row.classList.toggle('is-over',(isCur&&isOver)||(isDone&&ro>0))
+    const fill=row.querySelector('.prow-fill')
+    if(fill){if(isCur){fill.style.width=Math.min(100,Math.round((rr/(planTotal||1))*100))+'%';fill.style.background=ro>0?'#dc2626':'#132044'}else if(isDone){fill.style.width='100%';fill.style.background=ro>0?'#dc2626':'#1a7a4a'}else fill.style.width='0'}
+    const pt=row.querySelector('.prow-plan-t'),rt2=row.querySelector('.prow-real-t'),mb=row.querySelector('.prow-mb-fill'),tb=row.querySelector('.prow-tbar'),num=row.querySelector('.prow-num')
+    if(num)num.textContent=isDone?'✓':(isCur?'▶':idx+1)
+    if(isCur){
+      if(pt){pt.textContent=fmt(planSecs);pt.className='prow-plan-t '+(isOver?'over':bRatio<=.15?'danger':bRatio<=.30?'warn':'')}
+      if(rt2){rt2.textContent=(bOverSecs>0?'+ ':'')+fmt(blockReal);rt2.className='prow-real-t'+(bOverSecs>0?' over':'')}
+      if(mb){mb.style.width=Math.round(bRatio*100)+'%';mb.style.background=planColorY(bRatio)}
+      if(tb)tb.style.background=`linear-gradient(90deg,var(--navy) ${Math.round(bRatio*100)}%,var(--s3) ${Math.round(bRatio*100)}%)`
+    }else if(isDone){if(tb)tb.style.background=ro>0?'var(--danger)':'var(--ok)'}
+    else{if(tb)tb.style.background=`linear-gradient(90deg,var(--navy) 0%,var(--s3) 0%)`}
+  })
+}
+
+// Botão play direto na linha da pauta
+function rowTogglePlay(idx) {
+  if (idx === curIdx) {
+    // Já é o tema atual — play/pause
+    toggleBlock()
+  } else {
+    // Outro tema — muda para ele e inicia automaticamente
+    pauseBlock()
+    curIdx = idx
+    loadBlock()
+    renderAll()
+    playBlock()
+  }
+}
+
+function updateBtns() {
+  // Botão principal no painel esquerdo
+  const btn = document.getElementById('bl-btn')
+  if (btn) {
+    btn.textContent = blockRunning ? '⏸ Pausar' : '▶ Play'
+    btn.className   = blockRunning ? 'bctrl prim' : 'bctrl'
+  }
+  // Botões play em cada linha
+  document.querySelectorAll('.iBtn.prow-play-btn').forEach((b, idx) => {
+    const isCur = idx === curIdx
+    if (isCur) {
+      b.textContent = blockRunning ? '⏸' : '▶'
+      b.classList.toggle('playing', blockRunning)
+      b.title = blockRunning ? 'Pausar tema' : 'Iniciar tema'
+    } else {
+      b.textContent = '→'
+      b.classList.remove('playing')
+      b.title = 'Ir para este tema'
+    }
+  })
+}
+
+// ══════════════════════════════
+//  RENDER
+// ══════════════════════════════
+function renderAll() { renderPautas(); updateUI(); updateBtns() }
 
 function renderPautas() {
-  const list = document.getElementById('pauta-list')
-  list.innerHTML = ''
-  if (!pautas.length) {
-    list.innerHTML = '<div class="empty-state">Nenhuma pauta ainda.<br>Adicione um tema acima.</div>'
+  const list=document.getElementById('pauta-list')
+  list.innerHTML=''
+  if(!pautas.length) return
+  pautas.forEach((p,idx)=>{
+    const isDone=idx<curIdx,isCur=idx===curIdx
+    const rr=isCur?blockReal:(p.realSecs||0),ro=Math.max(0,rr-p.minutes*60)
+    const row=document.createElement('div')
+    row.className='prow'+(isCur?' is-current':'')+(isDone?' done':'')+(((isCur&&isOver)||(isDone&&ro>0))?' is-over':'')
+    row.draggable=true
+    row.innerHTML=`
+      <div class="prow-fill"></div>
+      <div class="prow-inner">
+        <div class="prow-handle">⠿</div>
+        <div class="prow-num">${isDone?'✓':(isCur?'▶':idx+1)}</div>
+        <div class="prow-info">
+          <div class="prow-topic">${esc(p.topic)}</div>
+          <div class="prow-sub">
+            ${p.presenter?`<span>👤 ${esc(p.presenter)}</span>`:''}
+            <span>⏱ ${p.minutes}min</span>
+            ${ro>0?`<span style="color:var(--danger);font-weight:600">+${Math.ceil(ro/60)}min estouro</span>`:''}
+          </div>
+        </div>
+        <div class="prow-timers">
+          <div class="prow-plan-t">00:00</div>
+          <div class="prow-real-t"></div>
+          <div class="prow-dur">${p.minutes}min</div>
+          <div class="prow-minibar"><div class="prow-mb-fill" style="width:100%;background:var(--navy)"></div></div>
+        </div>
+        <div class="prow-actions">
+        <div class="prow-actions">
+          <button class="iBtn" onclick="moveUp(${idx})" title="Mover acima">↑</button>
+          <button class="iBtn" onclick="moveDown(${idx})" title="Mover abaixo">↓</button>
+          <button class="iBtn" onclick="openModal(${p.id})" title="Editar">✏</button>
+          <button class="iBtn prow-play-btn ${isCur&&blockRunning?'playing':''}" id="prow-play-${idx}" onclick="rowTogglePlay(${idx})" title="${isCur?'Play/Pause tema':'Ir para este tema'}">${isCur?(blockRunning?'⏸':'▶'):'→'}</button>
+          <button class="iBtn del" onclick="deletePauta(${p.id})" title="Excluir">✕</button>
+        </div>
+        </div>
+      </div>
+      <div class="prow-tbar" style="height:3px"></div>
+      <div class="star-zone">
+        <div class="star-zone-row">
+          <span class="star-zone-lbl">Avaliação</span>
+          ${renderStars(idx, p.nota||0)}
+        </div>
+        <div class="star-report-wrap${p.nota>0?' visible':''}">
+          <textarea class="star-report" rows="1"
+            placeholder="Observação sobre este tema (opcional)"
+            onchange="setReport(${idx}, this.value)"
+            oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"
+          >${p.report||''}</textarea>
+        </div>
+      </div>
+    `
+    row.addEventListener('dragstart',e=>{dragSrc=idx;setTimeout(()=>row.classList.add('dragging'),0);e.dataTransfer.effectAllowed='move'})
+    row.addEventListener('dragover', e=>{e.preventDefault();document.querySelectorAll('.prow').forEach((r,i)=>r.classList.toggle('dragover',i===idx&&i!==dragSrc))})
+    row.addEventListener('drop',     e=>{e.preventDefault();if(dragSrc===null||dragSrc===idx)return;const m=pautas.splice(dragSrc,1)[0];pautas.splice(idx,0,m);if(dragSrc===curIdx)curIdx=idx;else if(dragSrc<curIdx&&idx>=curIdx)curIdx--;else if(dragSrc>curIdx&&idx<=curIdx)curIdx++;dragSrc=null;renderAll()})
+    row.addEventListener('dragend',  ()=>{dragSrc=null;document.querySelectorAll('.prow').forEach(r=>r.classList.remove('dragging','dragover'))})
+    list.appendChild(row)
+  })
+}
+
+// ══════════════════════════════
+//  CRUD (durante a reunião)
+// ══════════════════════════════
+function addPauta(){
+  const topic=document.getElementById('inp-topic').value.trim()
+  const presenter=document.getElementById('inp-presenter').value.trim()
+  const minutes=parseInt(document.getElementById('inp-min').value)
+  if(!topic){hl('inp-topic');return}if(!minutes){hl('inp-min');return}
+  pautas.push({id:Date.now(),topic,presenter,minutes,realSecs:0,nota:0})
+  meetingPlanTotal=pautas.reduce((a,p)=>a+p.minutes*60,0)
+  document.getElementById('inp-topic').value=''
+  document.getElementById('inp-presenter').value=''
+  document.getElementById('inp-min').value=''
+  document.getElementById('inp-topic').focus()
+  renderAll()
+}
+function deletePauta(id){
+  const i=pautas.findIndex(p=>p.id===id);if(i===-1)return
+  pautas.splice(i,1)
+  if(curIdx>=pautas.length)curIdx=Math.max(0,pautas.length-1)
+  pauseBlock();meetingPlanTotal=pautas.reduce((a,p)=>a+p.minutes*60,0);loadBlock();renderAll()
+}
+function openModal(id){
+  const p=pautas.find(x=>x.id===id);if(!p)return
+  editId=id
+  document.getElementById('edit-topic').value=p.topic
+  document.getElementById('edit-presenter').value=p.presenter||''
+  document.getElementById('edit-min').value=p.minutes
+  document.getElementById('modal').classList.add('show')
+}
+function closeModal(){editId=null;document.getElementById('modal').classList.remove('show')}
+function saveEdit(){
+  const p=pautas.find(x=>x.id===editId);if(!p)return
+  const topic=document.getElementById('edit-topic').value.trim()
+  const presenter=document.getElementById('edit-presenter').value.trim()
+  const minutes=parseInt(document.getElementById('edit-min').value)
+  if(!topic||!minutes)return
+  p.topic=topic;p.presenter=presenter;p.minutes=minutes
+  if(pautas.findIndex(x=>x.id===editId)===curIdx){planTotal=minutes*60;isOver=planSecs<=0}
+  meetingPlanTotal=pautas.reduce((a,p)=>a+p.minutes*60,0)
+  renderAll();closeModal()
+}
+function moveUp(idx){if(idx===0)return;[pautas[idx-1],pautas[idx]]=[pautas[idx],pautas[idx-1]];if(curIdx===idx)curIdx--;else if(curIdx===idx-1)curIdx++;renderAll()}
+function moveDown(idx){if(idx>=pautas.length-1)return;[pautas[idx],pautas[idx+1]]=[pautas[idx+1],pautas[idx]];if(curIdx===idx)curIdx++;else if(curIdx===idx+1)curIdx--;renderAll()}
+
+// ══════════════════════════════
+//  DASHBOARD
+// ══════════════════════════════
+function showDashboard() {
+  const totalPlanMin=Math.round(meetingPlanTotal/60)
+  const totalRealMin=Math.round(meetingRealSecs/60)
+  const totalOverMin=Math.max(0,totalRealMin-totalPlanMin)
+  const adhPct=meetingRealSecs>0?Math.min(100,Math.round(meetingPlanTotal/meetingRealSecs*100)):100
+  const notaMedia=pautas.filter(p=>p.nota>0).length>0
+    ? (pautas.reduce((a,p)=>a+(p.nota||0),0)/pautas.filter(p=>p.nota>0).length).toFixed(1) : null
+
+  let scoreLabel='',scoreSub='',scoreColor=''
+  if(adhPct>=95){scoreLabel='Excelente aderência!';scoreSub='A reunião seguiu o planejamento com precisão.';scoreColor='var(--ok)'}
+  else if(adhPct>=85){scoreLabel='Boa aderência';scoreSub='Pequenos desvios, dentro do esperado.';scoreColor='var(--ok)'}
+  else if(adhPct>=70){scoreLabel='Aderência razoável';scoreSub='Alguns temas ultrapassaram o tempo planejado.';scoreColor='var(--warn)'}
+  else{scoreLabel='Baixa aderência';scoreSub='A reunião durou significativamente mais do que o planejado.';scoreColor='var(--danger)'}
+
+  document.getElementById('dash-score-num').textContent=adhPct+'%'
+  document.getElementById('dash-score-num').style.color=scoreColor
+  document.getElementById('dash-score-label').textContent=scoreLabel
+  document.getElementById('dash-score-sub').textContent=scoreSub
+  document.getElementById('dash-score-bar').style.width=adhPct+'%'
+  document.getElementById('dash-score-bar').style.background=scoreColor
+
+  // Data e meta
+  const dataFmt=meeting.data?new Date(meeting.data+'T12:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'}):new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})
+  document.getElementById('dash-date').textContent=dataFmt
+  let metaHtml=''
+  if(meeting.inicio||meeting.fim) metaHtml+=`<span>🕐 ${[meeting.inicio,meeting.fim].filter(Boolean).join(' – ')}</span>`
+  if(meeting.participantes.length) metaHtml+=`<span>👥 ${meeting.participantes.length} participante${meeting.participantes.length>1?'s':''}</span>`
+  if(notaMedia) metaHtml+=`<span>⭐ Nota média: ${notaMedia}/5</span>`
+  document.getElementById('dash-meta').innerHTML=metaHtml
+
+  // Contexto
+  let ctxHtml=''
+  if(meeting.objetivo) ctxHtml+=`<div class="dc-field full"><div class="dc-lbl">Objetivo</div><div class="dc-val">${esc(meeting.objetivo)}</div></div>`
+  if(meeting.criterio) ctxHtml+=`<div class="dc-field full"><div class="dc-lbl">Critério de sucesso</div><div class="dc-val">${esc(meeting.criterio)}</div></div>`
+  if(meeting.participantes.length) ctxHtml+=`<div class="dc-field full"><div class="dc-lbl">Participantes</div><div class="dc-val">${meeting.participantes.map(p=>`<span class="mcc-tag">${esc(p)}</span>`).join('')}</div></div>`
+  document.getElementById('dash-context').innerHTML=ctxHtml||''
+  document.getElementById('dash-context').style.display=ctxHtml?'grid':'none'
+
+  // Summary
+  document.getElementById('dash-summary').innerHTML=`
+    <div class="ds-card"><div class="dv">${totalPlanMin}min</div><div class="dl">Planejado</div></div>
+    <div class="ds-card"><div class="dv${totalRealMin>totalPlanMin?' red':''}">${totalRealMin}min</div><div class="dl">Real</div></div>
+    <div class="ds-card"><div class="dv${totalOverMin>0?' red':''}">+${totalOverMin}min</div><div class="dl">Estouro</div></div>
+  `
+
+  // Tabela por bloco
+  const table=document.getElementById('dash-table')
+  table.innerHTML=''
+  pautas.forEach((p,idx)=>{
+    const rr=p.realSecs||0,pp=p.minutes*60,over=Math.max(0,rr-pp)
+    const pctUsed=pp>0?Math.min(100,Math.round(rr/pp*100)):0
+    const isOk=over===0
+    const starsHtml=[1,2,3,4,5].map(i=>`<span class="dt-star ${i<=(p.nota||0)?'lit':''}">★</span>`).join('')
+    const notaTxt=p.nota>0?`${p.nota}/5`:'Sem avaliação'
+    const div=document.createElement('div')
+    div.className='dt-row'
+    div.innerHTML=`
+      <div class="dt-main">
+        <div class="dt-num ${isOk?'ok':'over'}">${isOk?'✓':'!'}</div>
+        <div class="dt-topic">${esc(p.topic)}</div>
+        <div class="dt-bar"><div class="dt-bar-fill" style="width:${pctUsed}%;background:${isOk?'var(--ok)':'var(--danger)'}"></div></div>
+        <div class="dt-times">
+          <div class="dt-plan">${p.minutes}min plan</div>
+          <div class="dt-real ${isOk?'ok':'over'}">${fmt(rr)}${over>0?' (+'+fmt(over)+')':''}</div>
+        </div>
+      </div>
+      <div class="dt-stars-row">
+        <span class="dt-stars-lbl">Avaliação</span>
+        ${starsHtml}
+        <span class="dt-note">${notaTxt}</span>
+      </div>
+      ${p.report?`<div style="padding:4px 0 6px 22px;font-size:11px;color:var(--text2);font-style:italic;border-top:1px solid rgba(0,0,0,.05);margin-top:4px">"${esc(p.report)}"</div>`:''}
+    `
+    table.appendChild(div)
+  })
+
+  document.getElementById('dashboard').classList.add('show')
+}
+
+function closeDashboard() {
+  // Salva no Supabase (async, não bloqueia a UI)
+  saveToSupabase()
+
+  document.getElementById('dashboard').classList.remove('show')
+  document.getElementById('app-layout').style.display='none'
+  document.getElementById('topbar').style.display='none'
+  document.getElementById('setup-screen').style.display='flex'
+  // Reset
+  pautas=[];setupPautas=[];meeting={objetivo:'',criterio:'',inicio:'',fim:'',data:'',participantes:[]}
+  meetingRealSecs=0;blockReal=0;planSecs=0;isOver=false;curIdx=0
+  document.getElementById('s-objetivo').value=''
+  document.getElementById('s-criterio').value=''
+  document.getElementById('s-inicio').value=`${hh}:${mm}`
+  document.getElementById('s-fim').value=''
+  document.getElementById('s-data').value=new Date().toISOString().slice(0,10)
+  renderTags();renderSetupPautas();updateLaunchBtn()
+}
+
+// ══════════════════════════════
+//  HISTÓRICO
+// ══════════════════════════════
+async function openHistory() {
+  document.getElementById('history-overlay').classList.add('show')
+  const body = document.getElementById('history-body')
+  body.innerHTML = '<div class="hist-empty">Carregando...</div>'
+  const hist = await loadHistoryFromSupabase()
+  renderHistoryItems(hist)
+}
+
+function closeHistory() {
+  document.getElementById('history-overlay').classList.remove('show')
+}
+
+function renderHistoryItems(hist) {
+  const body = document.getElementById('history-body')
+  if (!hist.length) {
+    body.innerHTML='<div class="hist-empty">Nenhuma reunião registrada ainda.<br>As reuniões encerradas aparecem aqui automaticamente.</div>'
     return
   }
-  pautas.forEach((p, idx) => {
-    const d = document.createElement('div')
-    d.className = 'pcard' + (idx===currentIdx?' is-current':'')
-    d.draggable = true
-    d.innerHTML = `
-      <div class="handle" title="Arrastar">⠿</div>
-      <div class="pnum">${idx+1}</div>
-      <div class="pinfo">
-        <div class="ptopic">${esc(p.topic)}</div>
-        ${p.presenter?`<div class="ppresenter">👤 ${esc(p.presenter)}</div>`:''}
+  body.innerHTML=''
+  hist.forEach(r => {
+    const s = r.stats || {}
+    const adhPct = s.adhPct ?? 100
+    const scoreClass = adhPct>=85?'ok':adhPct>=70?'warn':'bad'
+    const dataFmt = r.meeting?.data
+      ? new Date(r.meeting.data+'T12:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})
+      : new Date(r.savedAt).toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})
+    const horario = [r.meeting?.inicio, r.meeting?.fim].filter(Boolean).join(' – ')
+    const notaStr = s.notaMedia ? `⭐ ${s.notaMedia}/5` : ''
+    const card = document.createElement('div')
+    card.className = 'hcard'
+    card.innerHTML = `
+      <div class="hcard-top">
+        <div class="hcard-score ${scoreClass}">${adhPct}%</div>
+        <div class="hcard-info">
+          <div class="hcard-title">${esc(r.meeting?.objetivo||'Reunião sem título')}</div>
+          <div class="hcard-meta">
+            <span>📅 ${dataFmt}</span>
+            ${horario?`<span>🕐 ${horario}</span>`:''}
+            <span>⏱ ${s.totalRealMin??0}min${(s.totalOverMin??0)>0?` (+${s.totalOverMin}min estouro)`:''}</span>
+            ${notaStr?`<span>${notaStr}</span>`:''}
+            ${r.meeting?.participantes?.length?`<span>👥 ${r.meeting.participantes.length}</span>`:''}
+          </div>
+        </div>
+        <button class="hcard-del" title="Excluir" onclick="deleteHistoryItem('${r.id}', event)">🗑</button>
       </div>
-      <div class="pdur">${p.minutes}min</div>
-      <div class="pactions">
-        <button class="iBtn" title="Subir" onclick="moveUp(${idx})">↑</button>
-        <button class="iBtn" title="Descer" onclick="moveDown(${idx})">↓</button>
-        <button class="iBtn" title="Editar" onclick="openModal(${p.id})">✏</button>
-        <button class="iBtn" title="Ir para este" onclick="jumpTo(${idx})">▶</button>
-        <button class="iBtn del" title="Excluir" onclick="deletePauta(${p.id})">✕</button>
-      </div>
+      ${r.pautas?.length?`<div class="hcard-chips">${r.pautas.map(p=>`<span class="hcard-chip">${esc(p.topic)} · ${p.minutes}min</span>`).join('')}</div>`:''}
     `
-    d.addEventListener('dragstart', e => onDragStart(e, idx))
-    d.addEventListener('dragover',  e => onDragOver(e, idx))
-    d.addEventListener('drop',      e => onDrop(e, idx))
-    d.addEventListener('dragend',   onDragEnd)
-    list.appendChild(d)
+    card.addEventListener('click', () => openHistDetail(r))
+    body.appendChild(card)
   })
 }
 
-function renderMini() {
-  const list = document.getElementById('agenda-mini-list')
-  list.innerHTML = ''
-  let total = 0
-  pautas.forEach((p, idx) => {
-    total += p.minutes
-    const d = document.createElement('div')
-    let cls = 'ami'
-    if (idx < currentIdx) cls += ' done'
-    else if (idx === currentIdx) cls += ' current'
-    d.className = cls
-    d.innerHTML = `
-      <div class="ami-dot">${idx<currentIdx?'✓':(idx===currentIdx?'▶':idx+1)}</div>
-      <div class="ami-topic">${esc(p.topic)}</div>
-      <div class="ami-dur">${p.minutes}min</div>
+async function deleteHistoryItem(id, e) {
+  e.stopPropagation()
+  if (!confirm('Excluir esta reunião do histórico?')) return
+  await deleteFromSupabase(id)
+  openHistory()
+}
+
+function openHistDetail(record) {
+  const s = record.stats
+  const m = record.meeting
+  const scoreColor = s.adhPct>=85?'var(--ok)':s.adhPct>=70?'var(--warn)':'var(--danger)'
+  let scoreLabel='', scoreSub=''
+  if(s.adhPct>=95){scoreLabel='Excelente aderência!';scoreSub='A reunião seguiu o planejamento com precisão.'}
+  else if(s.adhPct>=85){scoreLabel='Boa aderência';scoreSub='Pequenos desvios, dentro do esperado.'}
+  else if(s.adhPct>=70){scoreLabel='Aderência razoável';scoreSub='Alguns temas ultrapassaram o tempo planejado.'}
+  else{scoreLabel='Baixa aderência';scoreSub='A reunião durou significativamente mais do que o planejado.'}
+
+  const dataFmt = m.data
+    ? new Date(m.data+'T12:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})
+    : new Date(record.savedAt).toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})
+  document.getElementById('hist-dash-date').textContent = dataFmt
+
+  let metaHtml=''
+  if(m.inicio||m.fim) metaHtml+=`<span>🕐 ${[m.inicio,m.fim].filter(Boolean).join(' – ')}</span>`
+  if(m.participantes?.length) metaHtml+=`<span>👥 ${m.participantes.length} participante${m.participantes.length>1?'s':''}</span>`
+  if(s.notaMedia) metaHtml+=`<span>⭐ Nota média: ${s.notaMedia}/5</span>`
+  document.getElementById('hist-dash-meta').innerHTML = metaHtml
+
+  const body = document.getElementById('hist-dash-body')
+  body.innerHTML = ''
+
+  // Score
+  const scoreDiv = document.createElement('div')
+  scoreDiv.id='dash-score'
+  scoreDiv.innerHTML=`
+    <div id="dash-score-num" style="color:${scoreColor}">${s.adhPct}%</div>
+    <div id="dash-score-info">
+      <div id="dash-score-label">${scoreLabel}</div>
+      <div id="dash-score-sub">${scoreSub}</div>
+      <div id="dash-score-bar-wrap"><div id="dash-score-bar" style="width:${s.adhPct}%;background:${scoreColor}"></div></div>
+    </div>`
+  body.appendChild(scoreDiv)
+
+  // Contexto
+  let ctxHtml=''
+  if(m.objetivo) ctxHtml+=`<div class="dc-field full"><div class="dc-lbl">Objetivo</div><div class="dc-val">${esc(m.objetivo)}</div></div>`
+  if(m.criterio) ctxHtml+=`<div class="dc-field full"><div class="dc-lbl">Critério de sucesso</div><div class="dc-val">${esc(m.criterio)}</div></div>`
+  if(m.participantes?.length) ctxHtml+=`<div class="dc-field full"><div class="dc-lbl">Participantes</div><div class="dc-val">${m.participantes.map(p=>`<span class="mcc-tag">${esc(p)}</span>`).join('')}</div></div>`
+  if(ctxHtml){
+    const ctx=document.createElement('div')
+    ctx.id='dash-context'; ctx.innerHTML=ctxHtml
+    body.appendChild(ctx)
+  }
+
+  // Summary
+  const sumDiv=document.createElement('div')
+  sumDiv.id='dash-summary'
+  sumDiv.innerHTML=`
+    <div class="ds-card"><div class="dv">${s.totalPlanMin}min</div><div class="dl">Planejado</div></div>
+    <div class="ds-card"><div class="dv${s.totalRealMin>s.totalPlanMin?' red':''}">${s.totalRealMin}min</div><div class="dl">Real</div></div>
+    <div class="ds-card"><div class="dv${s.totalOverMin>0?' red':''}">+${s.totalOverMin}min</div><div class="dl">Estouro</div></div>`
+  body.appendChild(sumDiv)
+
+  // Título tabela
+  const tTitle=document.createElement('div')
+  tTitle.id='dash-table-title'; tTitle.textContent='Desempenho por bloco'
+  body.appendChild(tTitle)
+
+  // Tabela pautas
+  const table=document.createElement('div')
+  table.id='dash-table'
+  ;(record.pautas||[]).forEach(p=>{
+    const rr=p.realSecs||0,pp=p.minutes*60,over=Math.max(0,rr-pp)
+    const pctUsed=pp>0?Math.min(100,Math.round(rr/pp*100)):0
+    const isOk=over===0
+    const starsHtml=[1,2,3,4,5].map(i=>`<span class="dt-star ${i<=(p.nota||0)?'lit':''}">★</span>`).join('')
+    const notaTxt=p.nota>0?`${p.nota}/5`:'Sem avaliação'
+    const div=document.createElement('div')
+    div.className='dt-row'
+    div.innerHTML=`
+      <div class="dt-main">
+        <div class="dt-num ${isOk?'ok':'over'}">${isOk?'✓':'!'}</div>
+        <div class="dt-topic">${esc(p.topic)}</div>
+        <div class="dt-bar"><div class="dt-bar-fill" style="width:${pctUsed}%;background:${isOk?'var(--ok)':'var(--danger)'}"></div></div>
+        <div class="dt-times">
+          <div class="dt-plan">${p.minutes}min plan</div>
+          <div class="dt-real ${isOk?'ok':'over'}">${fmt(rr)}${over>0?' (+'+fmt(over)+')':''}</div>
+        </div>
+      </div>
+      <div class="dt-stars-row">
+        <span class="dt-stars-lbl">Avaliação</span>
+        ${starsHtml}
+        <span class="dt-note">${notaTxt}</span>
+      </div>
+      ${p.report?`<div style="padding:4px 0 6px 22px;font-size:11px;color:var(--text2);font-style:italic;border-top:1px solid rgba(0,0,0,.05);margin-top:4px">"${esc(p.report)}"</div>`:''}
     `
-    list.appendChild(d)
+    table.appendChild(div)
   })
-  const h = Math.floor(total/60), m2 = total%60
-  document.getElementById('agenda-total').textContent = h>0 ? `${h}h${m2>0?m2+'min':''}` : `${total}min`
+  body.appendChild(table)
+
+  document.getElementById('hist-detail-overlay').classList.add('show')
 }
 
-function updateConfig() {
-  document.getElementById('cfg-count').textContent = pautas.length
-  const tot = pautas.reduce((a,p)=>a+p.minutes,0)
-  document.getElementById('cfg-total').textContent = tot + ' min'
-  document.getElementById('cfg-cur').textContent = pautas.length ? `${currentIdx+1} / ${pautas.length}` : '—'
-  document.getElementById('cfg-warn').value = warnMin
-  document.getElementById('btn-sound').textContent = soundOn ? '🔔 Ativo' : '🔕 Mudo'
+function closeHistDetail() {
+  document.getElementById('hist-detail-overlay').classList.remove('show')
 }
 
-// ═══════════════════════════════
-//  ALERTAS
-// ═══════════════════════════════
-function showAlert() {
-  document.getElementById('end-alert').classList.add('show')
-  const next = pautas[currentIdx+1]
-  document.getElementById('ea-sub').textContent = next ? `Próximo: ${next.topic} (${next.minutes} min)` : 'Fim da reunião!'
-}
-function hideAlert() { document.getElementById('end-alert').classList.remove('show') }
+// ══════════════════════════════
+//  MISC
+// ══════════════════════════════
+function toggleForm(){formOpen=!formOpen;document.getElementById('add-form').className=formOpen?'open':'';document.getElementById('btn-add-toggle').textContent=formOpen?'✕ Fechar':'+ Nova pauta'}
+function switchConfig(){configOpen=!configOpen;document.getElementById('config-view').style.display=configOpen?'block':'none';document.getElementById('cfg-warn').value=warnMin;document.getElementById('btn-sound').textContent=soundOn?'🔔 Ativo':'🔕 Mudo'}
+function saveConfig(){warnMin=parseInt(document.getElementById('cfg-warn').value)||2}
+function showAlert(){document.getElementById('end-alert').classList.add('show');const nxt=pautas[curIdx+1];document.getElementById('ea-sub').textContent=nxt?`Próximo: ${nxt.topic} (${nxt.minutes} min)`:'Fim das pautas!'}
+function hideAlert(){document.getElementById('end-alert').classList.remove('show')}
+function flashColor(color,times=1){let n=0;const go=()=>{const f=document.createElement('div');f.className='flash';f.style.background=color;document.body.appendChild(f);setTimeout(()=>f.remove(),800);if(++n<times)setTimeout(go,800)};go()}
+function beep(){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();[523,659,784].forEach((freq,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.type='sine';o.frequency.value=freq;g.gain.setValueAtTime(.25,ctx.currentTime+i*.18);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+i*.18+.4);o.start(ctx.currentTime+i*.18);o.stop(ctx.currentTime+i*.18+.5)})}catch(e){}}
+function toggleSound(){soundOn=!soundOn;document.getElementById('btn-sound').textContent=soundOn?'🔔 Ativo':'🔕 Mudo'}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;')}
+function hl(id){const el=document.getElementById(id);el.style.borderColor='var(--danger)';setTimeout(()=>el.style.borderColor='',800)}
 
-function flashColor(color, times=1) {
-  let n = 0
-  const go = () => {
-    const f = document.createElement('div')
-    f.className = 'flash'
-    f.style.background = color
-    document.body.appendChild(f)
-    setTimeout(() => f.remove(), 700)
-    if (++n < times) setTimeout(go, 700)
-  }
-  go()
-}
-
-// ═══════════════════════════════
-//  SOM
-// ═══════════════════════════════
-function beep() {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)()
-    ;[523,659,784].forEach((freq, i) => {
-      const o = ctx.createOscillator()
-      const g = ctx.createGain()
-      o.connect(g); g.connect(ctx.destination)
-      o.type = 'sine'; o.frequency.value = freq
-      g.gain.setValueAtTime(.3, ctx.currentTime + i*.18)
-      g.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + i*.18 + .4)
-      o.start(ctx.currentTime + i*.18)
-      o.stop(ctx.currentTime + i*.18 + .5)
-    })
-  } catch(e) {}
-}
-
-function toggleSound() {
-  soundOn = !soundOn
-  document.getElementById('btn-sound').textContent = soundOn ? '🔔 Ativo' : '🔕 Mudo'
-  persist()
-}
-
-// ═══════════════════════════════
-//  IMPORT / EXPORT
-// ═══════════════════════════════
-function exportData() {
-  const blob = new Blob([JSON.stringify({pautas,version:1},null,2)],{type:'application/json'})
-  const a = document.createElement('a')
-  a.href = URL.createObjectURL(blob)
-  a.download = 'pauta-reuniao.json'
-  a.click()
-}
-
-function importData(e) {
-  const file = e.target.files[0]; if (!file) return
-  const r = new FileReader()
-  r.onload = ev => {
-    try {
-      const d = JSON.parse(ev.target.result)
-      if (d.pautas && Array.isArray(d.pautas)) {
-        pautas = d.pautas; currentIdx = 0; stop(); resetBlock(); persist(); renderAll(); switchTab('agenda')
-      }
-    } catch { alert('Arquivo inválido.') }
-  }
-  r.readAsText(file)
-  e.target.value = ''
-}
-
-function clearAll() {
-  if (!confirm('Limpar todas as pautas?')) return
-  pautas = []; currentIdx = 0; stop(); resetBlock(); persist(); renderAll()
-}
-
-// ═══════════════════════════════
-//  UTILS
-// ═══════════════════════════════
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
-function highlight(id) {
-  const el = document.getElementById(id)
-  el.style.borderColor = 'var(--danger)'
-  setTimeout(() => el.style.borderColor = '', 800)
-}
-
-// ═══════════════════════════════
-//  TECLADO
-// ═══════════════════════════════
-document.addEventListener('keydown', e => {
-  if (e.target.tagName === 'INPUT') return
-  if (e.code==='Space') { e.preventDefault(); toggleRun() }
-  if (e.code==='ArrowRight') nextBlock()
-  if (e.code==='ArrowLeft')  prevBlock()
-  if (e.code==='KeyR') resetCurrent()
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return
+  if(e.code==='Space'){e.preventDefault();toggleBlock()}
+  if(e.code==='ArrowRight')nextBlock()
+  if(e.code==='ArrowLeft')prevBlock()
+  if(e.code==='KeyR')resetCurBlock()
 })
-
-// Enter no formulário
-document.getElementById('inp-min').addEventListener('keydown', e => { if(e.key==='Enter') addPauta() })
-document.getElementById('inp-topic').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('inp-presenter').focus() })
 </script>
 </body>
 </html>
