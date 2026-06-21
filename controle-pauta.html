@@ -752,7 +752,7 @@ html,body{width:100%;min-height:100vh;background:var(--bg);font-family:'Inter',s
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
 <script>
 // ══════════════════════════════
 //  SUPABASE + AUTH
@@ -788,35 +788,38 @@ window.addEventListener('message', async (e) => {
 
 // Adapta db para usar o cliente autenticado
 const db = {
-  headers() {
-    return {
-      'apikey': SUPA_KEY,
-      'Authorization': `Bearer ${SUPA_KEY}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=representation'
-    }
+  async get(t, q='') {
+    let query = _supa.from(t).select('*')
+    if (q.includes('order=created_at.desc')) query = query.order('created_at', { ascending: false })
+    if (q.includes('order=created_at.asc'))  query = query.order('created_at', { ascending: true })
+    if (q.includes('order=ordem.asc'))       query = query.order('ordem', { ascending: true })
+    const limitM = q.match(/limit=(\d+)/)
+    if (limitM) query = query.limit(parseInt(limitM[1]))
+    const eqMatches = [...q.matchAll(/(\w+)=eq\.([^&]+)/g)]
+    for (const [, col, val] of eqMatches) query = query.eq(col, val)
+    const { data, error } = await query
+    if (error) { console.error('db.get', t, error.message); return [] }
+    return data || []
   },
-  async get(t,q=''){
-    const { data, error } = await _supa.from(t).select('*').limit(200)
-    // fallback manual com params
-    const r = await fetch(`${SUPA_URL}/rest/v1/${t}?${q}`, { headers: this.headers() })
-    return r.ok ? r.json() : []
+  async post(t, b) {
+    const { data, error } = await _supa.from(t).insert(b).select()
+    if (error) { console.error('db.post', t, error.message); return null }
+    return data
   },
-  async post(t,b){
-    const r = await fetch(`${SUPA_URL}/rest/v1/${t}`, {
-      method:'POST', headers: this.headers(), body: JSON.stringify(b)
-    })
-    if(!r.ok){ console.error(await r.text()); return null }
-    return r.json()
+  async patch(t, q, b) {
+    let query = _supa.from(t).update(b)
+    const eqMatches = [...q.matchAll(/(\w+)=eq\.([^&]+)/g)]
+    for (const [, col, val] of eqMatches) query = query.eq(col, val)
+    const { data, error } = await query.select()
+    if (error) { console.error('db.patch', t, error.message); return null }
+    return data
   },
-  async patch(t,q,b){
-    const r = await fetch(`${SUPA_URL}/rest/v1/${t}?${q}`, {
-      method:'PATCH', headers: this.headers(), body: JSON.stringify(b)
-    })
-    return r.ok ? r.json() : null
-  },
-  async del(t,q){
-    await fetch(`${SUPA_URL}/rest/v1/${t}?${q}`, { method:'DELETE', headers: this.headers() })
+  async del(t, q) {
+    let query = _supa.from(t).delete()
+    const eqMatches = [...q.matchAll(/(\w+)=eq\.([^&]+)/g)]
+    for (const [, col, val] of eqMatches) query = query.eq(col, val)
+    const { error } = await query
+    if (error) console.error('db.del', t, error.message)
   }
 }
 
