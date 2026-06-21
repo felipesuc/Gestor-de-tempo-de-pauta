@@ -773,6 +773,7 @@ window.addEventListener('message', async (e) => {
     await _supa.auth.setSession(e.data.session)
     const { data: profile } = await _supa.from('profiles').select('id,email,role,status').eq('id', e.data.session.user.id).single()
     currentUser = profile
+    track('login')
     // Atualiza topbar com nome do usuário
     const userBtn = document.getElementById('user-info-btn')
     if (userBtn && profile) {
@@ -953,6 +954,7 @@ async function goDetail(id) {
     renderDetailTags()
     renderDetailBlocos()
     updateDetailSide()
+    track('agenda_open',{id})
     showScreen('screen-detail')
   } catch(e) { console.error(e) }
   loading(false)
@@ -1084,6 +1086,7 @@ async function saveAgenda(){
       const rows=await db.post('agendas',payload)
       if(!rows||!rows[0]){ loading(false); return }
       agendaId=rows[0].id; currentAgendaId=agendaId
+      track('agenda_create',{titulo})
       document.getElementById('btn-delete-agenda').style.display='inline-flex'
     }
     // Salva blocos
@@ -1092,6 +1095,7 @@ async function saveAgenda(){
       await db.post('agenda_blocos',blocosPayload)
     }
     detailDirty=false
+    track('agenda_save',{titulo})
     document.getElementById('detail-topbar-title').textContent=titulo.slice(0,30)
     flashMsg('Agenda salva!')
   } catch(e){ console.error(e) }
@@ -1144,6 +1148,7 @@ function startMeetingFromDetail(){
   renderContextCard()
   loadBlock()
   renderPautas()
+  track('meeting_start',{blocos:pautas.length})
   showScreen('screen-meeting')
 }
 
@@ -1189,6 +1194,7 @@ function endMeeting(){
   showConfirm('Encerrar reunião','Encerrar a reunião e ver o relatório?',()=>{
     clearInterval(meetingRef);clearInterval(blockRef);blockRunning=false
     if(pautas[curIdx])pautas[curIdx].realSecs=blockReal
+    track('meeting_end',{blocos:pautas.length,realMin:Math.round(meetingRealSecs/60)})
     updateBtns(); showDashboard()
     // Marca agenda como realizada
     if(currentAgendaId) db.patch('agendas',`id=eq.${currentAgendaId}`,{status:'realizada'}).catch(()=>{})
@@ -1380,7 +1386,7 @@ function renderPautas(){
 }
 
 // Estrelas
-function setNota(idx,val){ pautas[idx].nota=val; const rows=document.querySelectorAll('.prow'); if(rows[idx]){rows[idx].querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('lit',i<val)); const nv=rows[idx].querySelector('.star-note-val');if(nv)nv.textContent=val>0?val+'/5':''; const rw=rows[idx].querySelector('.star-report-wrap');if(rw){rw.classList.toggle('visible',val>0);if(val>0){const ta=rw.querySelector('.star-report');if(ta)ta.focus()}}} }
+function setNota(idx,val){ track('block_rate',{nota:val,topic:pautas[idx]?.topic}); pautas[idx].nota=val; const rows=document.querySelectorAll('.prow'); if(rows[idx]){rows[idx].querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('lit',i<val)); const nv=rows[idx].querySelector('.star-note-val');if(nv)nv.textContent=val>0?val+'/5':''; const rw=rows[idx].querySelector('.star-report-wrap');if(rw){rw.classList.toggle('visible',val>0);if(val>0){const ta=rw.querySelector('.star-report');if(ta)ta.focus()}}} }
 function hoverStars(idx,val){ const rows=document.querySelectorAll('.prow');if(rows[idx])rows[idx].querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('lit',i<val)) }
 function unhoverStars(idx,nota){ const rows=document.querySelectorAll('.prow');if(rows[idx])rows[idx].querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('lit',i<nota)) }
 function setReport(idx,val){ if(pautas[idx])pautas[idx].report=val.trim() }
@@ -1526,6 +1532,7 @@ function closeDashboard(){
 //  HISTÓRICO
 // ══════════════════════════════
 async function openHistory(){
+  track('history_view')
   document.getElementById('history-overlay').classList.add('show')
   const body=document.getElementById('history-body')
   body.innerHTML='<div class="hist-empty">Carregando...</div>'
@@ -1656,6 +1663,16 @@ function doLogout() {
   } else {
     _supa.auth.signOut().then(() => { window.location.href = '/' })
   }
+}
+
+// ── TRACKING DE EVENTOS ──────────────────────
+async function track(event, meta={}) {
+  if (!currentUser?.id) return
+  try {
+    await _supa.from('analytics_events').insert({
+      user_id: currentUser.id, event, meta
+    })
+  } catch(e) {} // silencia erros de tracking
 }
 
 function goAdminPanel() {

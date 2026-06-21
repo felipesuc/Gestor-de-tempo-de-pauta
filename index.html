@@ -77,7 +77,43 @@ html,body{width:100%;min-height:100vh;font-family:'Inter',sans-serif;color:var(-
 .tb-btn:hover{background:rgba(255,255,255,.16);color:#fff;}
 .tb-btn.yellow{background:var(--yellow);border-color:var(--yellow);color:var(--navy);font-weight:800;}
 
+/* ══ ADMIN TABS ══ */
+.admin-tabs{display:flex;gap:4px;background:rgba(255,255,255,.08);border-radius:8px;padding:3px;}
+.admin-tab{background:none;border:none;color:rgba(255,255,255,.6);font-size:11px;font-weight:600;font-family:'Inter',sans-serif;padding:5px 14px;border-radius:6px;cursor:pointer;transition:all .15s;}
+.admin-tab:hover{color:#fff;}
+.admin-tab.active{background:rgba(255,255,255,.15);color:#fff;}
+
+/* ══ OBSERVABILIDADE ══ */
+.obs-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+@media(max-width:900px){.obs-kpi-grid{grid-template-columns:repeat(2,1fr);}}
+.obs-kpi{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;}
+.obs-kpi .kv{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:800;color:var(--navy);line-height:1;margin-bottom:4px;}
+.obs-kpi .kv.green{color:var(--ok);}
+.obs-kpi .kv.yellow{color:var(--warn);}
+.obs-kpi .kv.red{color:var(--danger);}
+.obs-kpi .kl{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;}
+.obs-kpi .ksub{font-size:11px;color:var(--text2);margin-top:3px;}
+
+.obs-row-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:800px){.obs-row-2{grid-template-columns:1fr;}}
+
+.obs-table-wrap{padding:0;overflow:hidden;}
+.obs-table{width:100%;border-collapse:collapse;font-size:12px;}
+.obs-table th{padding:8px 14px;text-align:left;font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--border);background:var(--s2);}
+.obs-table td{padding:9px 14px;border-bottom:1px solid rgba(0,0,0,.04);color:var(--text2);}
+.obs-table tr:last-child td{border-bottom:none;}
+.obs-table tr:hover td{background:rgba(19,32,68,.02);}
+.obs-table .bold{font-weight:600;color:var(--text);}
+.obs-table .mono{font-family:'JetBrains Mono',monospace;font-size:11px;}
+.obs-table .badge-ok{background:rgba(26,122,74,.1);color:var(--ok);padding:2px 7px;border-radius:5px;font-size:9px;font-weight:700;}
+.obs-table .badge-warn{background:rgba(180,83,9,.1);color:var(--warn);padding:2px 7px;border-radius:5px;font-size:9px;font-weight:700;}
+.obs-table .badge-bad{background:rgba(220,38,38,.08);color:var(--danger);padding:2px 7px;border-radius:5px;font-size:9px;font-weight:700;}
+.obs-mini-bar{height:4px;background:var(--s3);border-radius:2px;overflow:hidden;margin-top:4px;}
+.obs-mini-bar-fill{height:100%;border-radius:2px;transition:width .4s;}
+.obs-empty{padding:20px;text-align:center;color:var(--text3);font-size:12px;}
+
 .admin-body{flex:1;padding:32px;max-width:720px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:20px;}
+#admin-tab-observability{max-width:1100px;}
 .admin-section{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
 .admin-section-header{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
 .admin-section-header h2{font-size:12px;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;flex:1;}
@@ -205,11 +241,16 @@ html,body{width:100%;min-height:100vh;font-family:'Inter',sans-serif;color:var(-
   <div class="admin-topbar">
     <div class="logo">Controle de Pauta <small>Admin</small></div>
     <div class="spacer"></div>
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchAdminTab('users')">👥 Usuários</button>
+      <button class="admin-tab" onclick="switchAdminTab('observability')">📊 Observabilidade</button>
+    </div>
     <button class="tb-btn yellow" onclick="goApp()">▶ Ir para o App</button>
     <button class="tb-btn" onclick="doLogout()">Sair</button>
   </div>
-  <div class="admin-body">
 
+  <!-- ABA USUÁRIOS -->
+  <div id="admin-tab-users" class="admin-body">
     <div class="admin-section">
       <div class="admin-section-header">
         <h2>Solicitações pendentes</h2>
@@ -217,12 +258,69 @@ html,body{width:100%;min-height:100vh;font-family:'Inter',sans-serif;color:var(-
       </div>
       <div id="pending-list"><div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">Carregando...</div></div>
     </div>
-
     <div class="admin-section">
-      <div class="admin-section-header">
-        <h2>Todos os usuários</h2>
-      </div>
+      <div class="admin-section-header"><h2>Todos os usuários</h2></div>
       <div id="all-users-list"><div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">Carregando...</div></div>
+    </div>
+  </div>
+
+  <!-- ABA OBSERVABILIDADE -->
+  <div id="admin-tab-observability" class="admin-body" style="display:none;max-width:1100px;">
+
+    <!-- KPIs topo -->
+    <div id="obs-kpis" class="obs-kpi-grid"></div>
+
+    <!-- Linha 1: Usuários + Agendas -->
+    <div class="obs-row-2">
+      <div class="admin-section">
+        <div class="admin-section-header"><h2>👥 Usuários cadastrados</h2></div>
+        <div id="obs-users-table" class="obs-table-wrap">Carregando...</div>
+      </div>
+      <div class="admin-section">
+        <div class="admin-section-header"><h2>📋 Agendas por status</h2></div>
+        <div id="obs-agendas-table" class="obs-table-wrap">Carregando...</div>
+      </div>
+    </div>
+
+    <!-- Linha 2: Pautas + Notas -->
+    <div class="obs-row-2">
+      <div class="admin-section">
+        <div class="admin-section-header"><h2>⏱ Performance das pautas</h2></div>
+        <div id="obs-pautas-table" class="obs-table-wrap">Carregando...</div>
+      </div>
+      <div class="admin-section">
+        <div class="admin-section-header"><h2>⭐ Avaliações por tema</h2></div>
+        <div id="obs-notas-table" class="obs-table-wrap">Carregando...</div>
+      </div>
+    </div>
+
+    <!-- Linha 3: Atividade + Funcionalidades -->
+    <div class="obs-row-2">
+      <div class="admin-section">
+        <div class="admin-section-header"><h2>📈 Acessos por usuário</h2></div>
+        <div id="obs-acessos-table" class="obs-table-wrap">Carregando...</div>
+      </div>
+      <div class="admin-section">
+        <div class="admin-section-header"><h2>🔧 Uso por funcionalidade</h2></div>
+        <div id="obs-features-table" class="obs-table-wrap">Carregando...</div>
+      </div>
+    </div>
+
+    <!-- Linha 4: Aderência + Reuniões recentes -->
+    <div class="obs-row-2">
+      <div class="admin-section">
+        <div class="admin-section-header"><h2>🎯 Aderência média por reunião</h2></div>
+        <div id="obs-aderencia-table" class="obs-table-wrap">Carregando...</div>
+      </div>
+      <div class="admin-section">
+        <div class="admin-section-header"><h2>🕐 Reuniões recentes</h2></div>
+        <div id="obs-reunioes-table" class="obs-table-wrap">Carregando...</div>
+      </div>
+    </div>
+
+    <div style="text-align:center;font-size:11px;color:var(--text3);padding:8px 0;">
+      Última atualização: <span id="obs-updated-at">—</span>
+      <button onclick="loadObservability()" style="background:none;border:none;color:var(--navy);font-size:11px;cursor:pointer;margin-left:8px;text-decoration:underline;">↺ Atualizar</button>
     </div>
 
   </div>
@@ -344,6 +442,8 @@ async function afterLogin(user) {
   if (profile.role === 'admin') {
     showScreen('screen-admin')
     loadAdminPanel()
+    // track no supabase direto
+    supabase.from('analytics_events').insert({user_id:profile.id, event:'login', meta:{role:'admin'}}).then(()=>{})
     return
   }
 
@@ -472,6 +572,278 @@ async function init() {
     if (event === 'SIGNED_IN' && session) await afterLogin(session.user)
     if (event === 'SIGNED_OUT') showScreen('screen-login')
   })
+}
+
+// ══ ADMIN TABS ══
+function switchAdminTab(tab) {
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'))
+  document.querySelectorAll('.admin-tab')[tab==='users'?0:1].classList.add('active')
+  document.getElementById('admin-tab-users').style.display         = tab==='users'?'flex':'none'
+  document.getElementById('admin-tab-observability').style.display = tab==='observability'?'flex':'none'
+  if (tab==='observability') loadObservability()
+}
+
+// ══ OBSERVABILIDADE ══
+async function loadObservability() {
+  document.getElementById('obs-updated-at').textContent = new Date().toLocaleTimeString('pt-BR')
+
+  const [users, agendas, reunioes, pautas, events] = await Promise.all([
+    supabase.from('profiles').select('id,email,nome,status,role,created_at'),
+    supabase.from('agendas').select('id,titulo,status,owner_id,created_at'),
+    supabase.from('reunioes').select('id,objetivo,owner_id,stats,created_at,participantes'),
+    supabase.from('pautas_reuniao').select('id,reuniao_id,topic,minutes,real_secs,nota,report'),
+    supabase.from('analytics_events').select('id,user_id,event,meta,created_at').order('created_at',{ascending:false}).limit(1000)
+  ])
+
+  const U = users.data  || []
+  const A = agendas.data|| []
+  const R = reunioes.data||[]
+  const P = pautas.data ||[]
+  const E = events.data ||[]
+
+  renderKPIs(U,A,R,P,E)
+  renderUsersTable(U,E)
+  renderAgendasTable(A)
+  renderPautasTable(P)
+  renderNotasTable(P)
+  renderAcessosTable(U,E)
+  renderFeaturesTable(E)
+  renderAderenciaTable(R)
+  renderRecentMeetings(R)
+}
+
+function renderKPIs(U,A,R,P,E) {
+  const ativos    = U.filter(u=>u.status==='ativo'&&u.role!=='admin').length
+  const pendentes = U.filter(u=>u.status==='pendente').length
+  const agendasTotal = A.length
+  const reunioesTotal = R.length
+  const pautasTotal = P.length
+  const pautasOver = P.filter(p=>(p.real_secs||0)>p.minutes*60).length
+  const pctOver = pautasTotal>0?Math.round(pautasOver/pautasTotal*100):0
+
+  const notasP = P.filter(p=>p.nota>0)
+  const notaMedia = notasP.length>0?(notasP.reduce((a,p)=>a+(p.nota||0),0)/notasP.length).toFixed(1):'—'
+
+  const logins = E.filter(e=>e.event==='login').length
+  const uniqueUsers = new Set(E.filter(e=>e.event==='login').map(e=>e.user_id)).size
+
+  const adhValues = R.map(r=>r.stats?.adhGeral||r.stats?.adhPct||null).filter(v=>v!==null)
+  const adhMedia = adhValues.length>0?Math.round(adhValues.reduce((a,v)=>a+v,0)/adhValues.length):null
+
+  const kpis = [
+    {v:ativos,         l:'Usuários ativos',      sub:`${pendentes} pendente${pendentes!==1?'s':''}`,  color:''},
+    {v:agendasTotal,   l:'Agendas cadastradas',  sub:`${reunioesTotal} reuniões realizadas`,           color:''},
+    {v:pautasTotal,    l:'Total de pautas',       sub:`${pctOver}% com estouro de tempo`,             color:pctOver>50?'red':pctOver>25?'yellow':'green'},
+    {v:notaMedia,      l:'Nota média de conteúdo',sub:`${notasP.length} avaliações`,                  color:notaMedia>=4?'green':notaMedia>=3?'yellow':notaMedia!=='—'?'red':''},
+    {v:logins,         l:'Total de acessos',      sub:`${uniqueUsers} usuários distintos`,             color:''},
+    {v:adhMedia!==null?adhMedia+'%':'—', l:'Aderência média geral', sub:'Tempo + Conteúdo',           color:adhMedia>=80?'green':adhMedia>=60?'yellow':adhMedia!==null?'red':''},
+    {v:A.filter(a=>a.status==='realizada').length, l:'Agendas realizadas', sub:`${A.filter(a=>a.status==='rascunho').length} rascunhos`, color:''},
+    {v:P.filter(p=>p.nota>0).length,     l:'Pautas avaliadas',     sub:`${pautasTotal>0?Math.round(P.filter(p=>p.nota>0).length/pautasTotal*100):0}% do total`, color:''},
+  ]
+
+  document.getElementById('obs-kpis').innerHTML = kpis.map(k=>`
+    <div class="obs-kpi">
+      <div class="kv ${k.color}">${k.v}</div>
+      <div class="kl">${k.l}</div>
+      ${k.sub?`<div class="ksub">${k.sub}</div>`:''}
+    </div>`).join('')
+}
+
+function renderUsersTable(U,E) {
+  const loginsByUser = {}
+  E.filter(e=>e.event==='login').forEach(e=>{ loginsByUser[e.user_id]=(loginsByUser[e.user_id]||0)+1 })
+  const lastLoginByUser = {}
+  E.filter(e=>e.event==='login').forEach(e=>{
+    if(!lastLoginByUser[e.user_id]||e.created_at>lastLoginByUser[e.user_id])
+      lastLoginByUser[e.user_id]=e.created_at
+  })
+  const rows = U.filter(u=>u.role!=='admin').sort((a,b)=>(loginsByUser[b.id]||0)-(loginsByUser[a.id]||0))
+  if(!rows.length){document.getElementById('obs-users-table').innerHTML='<div class="obs-empty">Nenhum usuário ainda.</div>';return}
+  document.getElementById('obs-users-table').innerHTML=`<table class="obs-table">
+    <tr><th>Usuário</th><th>Status</th><th>Acessos</th><th>Último acesso</th></tr>
+    ${rows.map(u=>`<tr>
+      <td><div class="bold">${esc(u.nome||u.email.split('@')[0])}</div><div style="font-size:10px;color:var(--text3)">${esc(u.email)}</div></td>
+      <td><span class="badge-${u.status==='ativo'?'ok':u.status==='pendente'?'warn':'bad'}">${u.status}</span></td>
+      <td class="mono">${loginsByUser[u.id]||0}</td>
+      <td style="font-size:11px;color:var(--text3)">${lastLoginByUser[u.id]?new Date(lastLoginByUser[u.id]).toLocaleDateString('pt-BR'):'—'}</td>
+    </tr>`).join('')}
+  </table>`
+}
+
+function renderAgendasTable(A) {
+  const byStatus = {rascunho:0,realizada:0}
+  A.forEach(a=>{ byStatus[a.status]=(byStatus[a.status]||0)+1 })
+  const porMes = {}
+  A.forEach(a=>{ const m=a.created_at.slice(0,7); porMes[m]=(porMes[m]||0)+1 })
+  const rows = Object.entries(porMes).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,6)
+  const max = Math.max(...Object.values(porMes),1)
+  document.getElementById('obs-agendas-table').innerHTML=`
+    <table class="obs-table">
+      <tr><th>Status</th><th>Qtd</th><th>%</th></tr>
+      <tr><td class="bold">Rascunho</td><td class="mono">${byStatus.rascunho||0}</td><td><span class="badge-warn">rascunho</span></td></tr>
+      <tr><td class="bold">Realizada</td><td class="mono">${byStatus.realizada||0}</td><td><span class="badge-ok">realizada</span></td></tr>
+    </table>
+    <div style="padding:8px 14px;border-top:1px solid var(--border);">
+      <div style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Cadastros por mês</div>
+      ${rows.map(([m,v])=>`
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+          <div style="font-size:11px;color:var(--text2);width:60px">${m.slice(5)}/${m.slice(0,4)}</div>
+          <div style="flex:1"><div class="obs-mini-bar"><div class="obs-mini-bar-fill" style="width:${Math.round(v/max*100)}%;background:var(--navy)"></div></div></div>
+          <div class="mono" style="font-size:11px;width:20px;text-align:right">${v}</div>
+        </div>`).join('')}
+    </div>`
+}
+
+function renderPautasTable(P) {
+  if(!P.length){document.getElementById('obs-pautas-table').innerHTML='<div class="obs-empty">Nenhuma pauta ainda.</div>';return}
+  const totalOver = P.filter(p=>(p.real_secs||0)>p.minutes*60).length
+  const totalDentro = P.filter(p=>(p.real_secs||0)>0&&(p.real_secs||0)<=p.minutes*60).length
+  const totalSemExec = P.filter(p=>(p.real_secs||0)===0).length
+  const tempos = P.filter(p=>p.real_secs>0).map(p=>p.real_secs/60)
+  const mediaMin = tempos.length>0?(tempos.reduce((a,v)=>a+v,0)/tempos.length).toFixed(1):0
+  const temasMaisAtrasados = [...P].filter(p=>(p.real_secs||0)>p.minutes*60)
+    .sort((a,b)=>(b.real_secs-b.minutes*60)-(a.real_secs-a.minutes*60)).slice(0,5)
+
+  document.getElementById('obs-pautas-table').innerHTML=`
+    <table class="obs-table">
+      <tr><th>Situação</th><th>Qtd</th></tr>
+      <tr><td class="bold">✓ No prazo</td><td class="mono">${totalDentro}</td></tr>
+      <tr><td class="bold">⚠ Estouro</td><td class="mono"><span class="badge-${totalOver>0?'warn':'ok'}">${totalOver}</span></td></tr>
+      <tr><td class="bold">— Não executado</td><td class="mono">${totalSemExec}</td></tr>
+      <tr><td class="bold">Tempo médio real</td><td class="mono">${mediaMin}min</td></tr>
+    </table>
+    ${temasMaisAtrasados.length?`
+    <div style="padding:8px 14px;border-top:1px solid var(--border);">
+      <div style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Temas com maior estouro</div>
+      ${temasMaisAtrasados.map(p=>{
+        const over=Math.round((p.real_secs-p.minutes*60)/60)
+        return `<div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid rgba(0,0,0,.04)">
+          <span style="color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px">${esc(p.topic)}</span>
+          <span class="badge-warn">+${over}min</span>
+        </div>`}).join('')}
+    </div>`:''}
+  `
+}
+
+function renderNotasTable(P) {
+  const comNota = P.filter(p=>p.nota>0)
+  if(!comNota.length){document.getElementById('obs-notas-table').innerHTML='<div class="obs-empty">Nenhuma avaliação ainda.</div>';return}
+  const dist = {1:0,2:0,3:0,4:0,5:0}
+  comNota.forEach(p=>{ dist[p.nota]=(dist[p.nota]||0)+1 })
+  const max = Math.max(...Object.values(dist),1)
+  const media = (comNota.reduce((a,p)=>a+p.nota,0)/comNota.length).toFixed(1)
+  const top = [...comNota].sort((a,b)=>b.nota-a.nota).slice(0,3)
+  const bot = [...comNota].sort((a,b)=>a.nota-b.nota).slice(0,3)
+  document.getElementById('obs-notas-table').innerHTML=`
+    <div style="padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;">
+      <div style="font-family:monospace;font-size:32px;font-weight:800;color:var(--navy)">${media}</div>
+      <div><div style="font-size:11px;color:var(--text2)">${comNota.length} avaliações</div><div style="font-size:10px;color:var(--text3)">${P.filter(p=>p.nota===0||!p.nota).length} sem avaliação</div></div>
+    </div>
+    <div style="padding:10px 14px;">
+      ${[5,4,3,2,1].map(n=>`
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+          <div style="font-size:11px;color:var(--yellow2);width:40px">${'★'.repeat(n)}</div>
+          <div style="flex:1"><div class="obs-mini-bar"><div class="obs-mini-bar-fill" style="width:${Math.round((dist[n]||0)/max*100)}%;background:var(--yellow2)"></div></div></div>
+          <div class="mono" style="font-size:11px;width:20px;text-align:right">${dist[n]||0}</div>
+        </div>`).join('')}
+    </div>
+    ${bot.filter(p=>p.nota<=2).length?`<div style="padding:6px 14px 10px;border-top:1px solid var(--border);font-size:10px;color:var(--danger)">⚠ Temas mais críticos: ${bot.filter(p=>p.nota<=2).map(p=>`${esc(p.topic)} (${p.nota}★)`).join(', ')}</div>`:''}
+  `
+}
+
+function renderAcessosTable(U,E) {
+  const byUser = {}
+  E.forEach(e=>{ if(!byUser[e.user_id]) byUser[e.user_id]={total:0,login:0,agenda:0,meeting:0,lastSeen:null}
+    byUser[e.user_id].total++
+    if(e.event==='login') byUser[e.user_id].login++
+    if(e.event?.includes('agenda')) byUser[e.user_id].agenda++
+    if(e.event?.includes('meeting')) byUser[e.user_id].meeting++
+    if(!byUser[e.user_id].lastSeen||e.created_at>byUser[e.user_id].lastSeen) byUser[e.user_id].lastSeen=e.created_at
+  })
+  const userMap = {}
+  U.forEach(u=>userMap[u.id]=u)
+  const rows = Object.entries(byUser).sort((a,b)=>b[1].total-a[1].total).slice(0,10)
+  if(!rows.length){document.getElementById('obs-acessos-table').innerHTML='<div class="obs-empty">Nenhum evento registrado ainda.<br>Os eventos são registrados conforme o uso.</div>';return}
+  document.getElementById('obs-acessos-table').innerHTML=`<table class="obs-table">
+    <tr><th>Usuário</th><th>Logins</th><th>Agendas</th><th>Reuniões</th><th>Último acesso</th></tr>
+    ${rows.map(([uid,d])=>{
+      const u=userMap[uid]
+      return `<tr>
+        <td class="bold">${u?esc(u.email.split('@')[0]):'—'}</td>
+        <td class="mono">${d.login}</td>
+        <td class="mono">${d.agenda}</td>
+        <td class="mono">${d.meeting}</td>
+        <td style="font-size:10px;color:var(--text3)">${d.lastSeen?new Date(d.lastSeen).toLocaleDateString('pt-BR'):'—'}</td>
+      </tr>`}).join('')}
+  </table>`
+}
+
+function renderFeaturesTable(E) {
+  const counts = {}
+  const labels = {
+    'login':'Login',
+    'agenda_create':'Criar agenda',
+    'agenda_open':'Abrir agenda',
+    'agenda_save':'Salvar agenda',
+    'meeting_start':'Iniciar reunião',
+    'meeting_end':'Encerrar reunião',
+    'block_play':'Iniciar bloco',
+    'block_pause':'Pausar bloco',
+    'block_rate':'Avaliar bloco ★',
+    'history_view':'Ver histórico',
+    'admin_panel':'Painel admin',
+  }
+  E.forEach(e=>{ counts[e.event]=(counts[e.event]||0)+1 })
+  const total = Object.values(counts).reduce((a,v)=>a+v,0)||1
+  const rows = Object.entries(counts).sort((a,b)=>b[1]-a[1])
+  if(!rows.length){document.getElementById('obs-features-table').innerHTML='<div class="obs-empty">Nenhum evento ainda.<br>Registra após uso real do app.</div>';return}
+  document.getElementById('obs-features-table').innerHTML=`
+    <div style="padding:10px 14px;">
+      ${rows.map(([evt,cnt])=>`
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <div style="font-size:11px;color:var(--text2);width:130px;flex-shrink:0">${labels[evt]||evt}</div>
+          <div style="flex:1"><div class="obs-mini-bar"><div class="obs-mini-bar-fill" style="width:${Math.round(cnt/Math.max(...Object.values(counts))*100)}%;background:var(--navy)"></div></div></div>
+          <div class="mono" style="font-size:11px;width:28px;text-align:right">${cnt}</div>
+          <div style="font-size:10px;color:var(--text3);width:32px;text-align:right">${Math.round(cnt/total*100)}%</div>
+        </div>`).join('')}
+    </div>`
+}
+
+function renderAderenciaTable(R) {
+  if(!R.length){document.getElementById('obs-aderencia-table').innerHTML='<div class="obs-empty">Nenhuma reunião encerrada ainda.</div>';return}
+  const comStats = R.filter(r=>r.stats?.adhGeral||r.stats?.adhPct)
+  if(!comStats.length){document.getElementById('obs-aderencia-table').innerHTML='<div class="obs-empty">Sem dados de aderência ainda.</div>';return}
+  const media = Math.round(comStats.reduce((a,r)=>a+(r.stats.adhGeral||r.stats.adhPct),0)/comStats.length)
+  const mediaTempo = Math.round(comStats.filter(r=>r.stats.adhTempo).reduce((a,r)=>a+(r.stats.adhTempo||0),0)/comStats.filter(r=>r.stats.adhTempo).length||0)
+  const mediaConteudo = comStats.filter(r=>r.stats.adhConteudo).length>0
+    ? Math.round(comStats.filter(r=>r.stats.adhConteudo).reduce((a,r)=>a+(r.stats.adhConteudo||0),0)/comStats.filter(r=>r.stats.adhConteudo).length)
+    : null
+  const color = v=>v>=80?'green':v>=60?'yellow':'red'
+  document.getElementById('obs-aderencia-table').innerHTML=`
+    <table class="obs-table">
+      <tr><th>Dimensão</th><th>Média</th><th>Avaliação</th></tr>
+      <tr><td class="bold">⚡ Geral</td><td class="mono">${media}%</td><td><span class="badge-${color(media)}">${media>=80?'boa':media>=60?'razoável':'baixa'}</span></td></tr>
+      ${mediaTempo?`<tr><td class="bold">⏱ Tempo</td><td class="mono">${mediaTempo}%</td><td><span class="badge-${color(mediaTempo)}">${mediaTempo>=80?'boa':mediaTempo>=60?'razoável':'baixa'}</span></td></tr>`:''}
+      ${mediaConteudo!==null?`<tr><td class="bold">★ Conteúdo</td><td class="mono">${mediaConteudo}%</td><td><span class="badge-${color(mediaConteudo)}">${mediaConteudo>=80?'boa':mediaConteudo>=60?'razoável':'baixa'}</span></td></tr>`:''}
+      <tr><td style="color:var(--text3)">Reuniões com dados</td><td class="mono">${comStats.length}/${R.length}</td><td></td></tr>
+    </table>`
+}
+
+function renderRecentMeetings(R) {
+  if(!R.length){document.getElementById('obs-reunioes-table').innerHTML='<div class="obs-empty">Nenhuma reunião encerrada ainda.</div>';return}
+  const rows = [...R].sort((a,b)=>b.created_at.localeCompare(a.created_at)).slice(0,8)
+  document.getElementById('obs-reunioes-table').innerHTML=`<table class="obs-table">
+    <tr><th>Reunião</th><th>Data</th><th>Partic.</th><th>Aderência</th></tr>
+    ${rows.map(r=>{
+      const adh=r.stats?.adhGeral||r.stats?.adhPct||null
+      const color=adh>=80?'ok':adh>=60?'warn':'bad'
+      return `<tr>
+        <td class="bold" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.objetivo||'Sem título')}</td>
+        <td style="font-size:11px;color:var(--text3)">${r.created_at?new Date(r.created_at).toLocaleDateString('pt-BR'):'—'}</td>
+        <td class="mono">${Array.isArray(r.participantes)?r.participantes.length:0}</td>
+        <td>${adh!==null?`<span class="badge-${color}">${adh}%</span>`:'—'}</td>
+      </tr>`}).join('')}
+  </table>`
 }
 
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
