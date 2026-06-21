@@ -460,6 +460,7 @@ html,body{width:100%;min-height:100vh;background:var(--bg);font-family:'Inter',s
     <div class="spacer"></div>
     <button class="tb-btn ghost" onclick="openHistory()">📋 Histórico</button>
     <button class="tb-btn" id="user-info-btn" style="cursor:default;opacity:.7">👤 usuário</button>
+    <button class="tb-btn" id="btn-admin-panel" style="display:none" onclick="goAdminPanel()">⚙ Admin</button>
     <button class="tb-btn yellow" onclick="goNewAgenda()">+ Nova agenda</button>
   </div>
   <div id="library-body">
@@ -771,7 +772,10 @@ window.addEventListener('message', async (e) => {
     currentUser = profile
     // Atualiza topbar com nome do usuário
     const userBtn = document.getElementById('user-info-btn')
-    if (userBtn && profile) userBtn.textContent = '👤 ' + profile.email.split('@')[0]
+    if (userBtn && profile) {
+      userBtn.textContent = '👤 ' + profile.email.split('@')[0]
+      if (profile.role === 'admin') { const ab=document.getElementById('btn-admin-panel'); if(ab) ab.style.display='inline-flex' }
+    }
   }
 })
 
@@ -782,7 +786,10 @@ window.addEventListener('message', async (e) => {
     const { data: profile } = await _supa.from('profiles').select('id,email,role,status').eq('id', session.user.id).single()
     currentUser = profile
     const userBtn = document.getElementById('user-info-btn')
-    if (userBtn && profile) userBtn.textContent = '👤 ' + profile.email.split('@')[0]
+    if (userBtn && profile) {
+      userBtn.textContent = '👤 ' + profile.email.split('@')[0]
+      if (profile.role === 'admin') { const ab=document.getElementById('btn-admin-panel'); if(ab) ab.style.display='inline-flex' }
+    }
   }
 })()
 
@@ -1640,6 +1647,14 @@ document.addEventListener('keydown',e=>{
 // ══════════════════════════════
 //  INIT
 // ══════════════════════════════
+function goAdminPanel() {
+  // Volta para o index.html (auth-layer) que tem o painel admin
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'GO_ADMIN' }, '*')
+  } else {
+    window.location.href = '/'
+  }
+}
 // animação pdot está no CSS
 goLibrary()
 </script>

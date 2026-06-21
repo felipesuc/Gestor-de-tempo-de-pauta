@@ -361,7 +361,6 @@ async function afterLogin(user) {
 function goApp() {
   showScreen('screen-app')
   const frame = document.getElementById('app-frame')
-  // Passa session via postMessage após carregar
   if (!frame.src || frame.src === window.location.href) {
     frame.src = APP_URL
   }
@@ -374,6 +373,14 @@ function goApp() {
     })
   }
 }
+
+// Escuta mensagens do iframe
+window.addEventListener('message', (e) => {
+  if (e.data?.type === 'GO_ADMIN') {
+    showScreen('screen-admin')
+    loadAdminPanel()
+  }
+})
 
 // ══ PAINEL ADMIN ══
 async function loadAdminPanel() {
