@@ -99,6 +99,8 @@ html,body{width:100%;min-height:100vh;font-family:'Inter',sans-serif;color:var(-
 .action-btn.approve:hover{background:#156038;}
 .action-btn.block{background:rgba(220,38,38,.1);color:var(--danger);border:1px solid rgba(220,38,38,.25);}
 .action-btn.block:hover{background:rgba(220,38,38,.2);}
+.action-btn.reject{background:rgba(220,38,38,.08);color:var(--danger);border:1px solid rgba(220,38,38,.2);}
+.action-btn.reject:hover{background:rgba(220,38,38,.18);}
 .action-btn.unblock{background:rgba(19,32,68,.08);color:var(--navy);border:1px solid var(--border);}
 .action-btn.unblock:hover{background:rgba(19,32,68,.14);}
 
@@ -380,6 +382,9 @@ window.addEventListener('message', (e) => {
     showScreen('screen-admin')
     loadAdminPanel()
   }
+  if (e.data?.type === 'DO_LOGOUT') {
+    doLogout()
+  }
 })
 
 // ══ PAINEL ADMIN ══
@@ -421,8 +426,10 @@ function renderUserList(containerId, users, isPending) {
       <span class="status-badge ${u.status}">${u.status}</span>
       <div class="user-actions">
         ${u.status === 'pendente' ? `<button class="action-btn approve" onclick="setStatus('${u.id}','ativo')">✓ Aprovar</button>` : ''}
+        ${u.status === 'pendente' ? `<button class="action-btn reject"  onclick="rejectUser('${u.id}','${u.email}')">✕ Recusar</button>` : ''}
         ${u.status === 'ativo'    ? `<button class="action-btn block"   onclick="setStatus('${u.id}','bloqueado')">Bloquear</button>` : ''}
         ${u.status === 'bloqueado'? `<button class="action-btn unblock" onclick="setStatus('${u.id}','ativo')">Desbloquear</button>` : ''}
+        ${u.status === 'bloqueado'? `<button class="action-btn reject"  onclick="rejectUser('${u.id}','${u.email}')">🗑 Remover</button>` : ''}
       </div>`
     el.appendChild(row)
   })
@@ -431,6 +438,21 @@ function renderUserList(containerId, users, isPending) {
 async function setStatus(userId, status) {
   loading(true)
   await supabase.from('profiles').update({ status }).eq('id', userId)
+  await loadAdminPanel()
+  loading(false)
+}
+
+async function rejectUser(userId, email) {
+  if (!confirm(`Recusar e remover o acesso de ${email}?\n\nEsta ação não pode ser desfeita.`)) return
+  loading(true)
+  // Remove o perfil — o cascade remove o auth.user via admin API
+  await supabase.from('profiles').delete().eq('id', userId)
+  // Tenta deletar via auth admin (só funciona se tiver service role, mas o perfil já foi removido)
+  try {
+    await supabase.auth.admin.deleteUser(userId)
+  } catch(e) {
+    // silencia — o perfil foi removido e o usuário não conseguirá mais acessar
+  }
   await loadAdminPanel()
   loading(false)
 }

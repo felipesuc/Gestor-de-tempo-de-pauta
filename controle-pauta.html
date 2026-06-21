@@ -462,6 +462,7 @@ html,body{width:100%;min-height:100vh;background:var(--bg);font-family:'Inter',s
     <button class="tb-btn" id="user-info-btn" style="cursor:default;opacity:.7">👤 usuário</button>
     <button class="tb-btn" id="btn-admin-panel" style="display:none" onclick="goAdminPanel()">⚙ Admin</button>
     <button class="tb-btn yellow" onclick="goNewAgenda()">+ Nova agenda</button>
+    <button class="tb-btn ghost" onclick="doLogout()" style="border-color:rgba(255,255,255,.15)">Sair</button>
   </div>
   <div id="library-body">
     <div id="lib-empty">
@@ -489,6 +490,7 @@ html,body{width:100%;min-height:100vh;background:var(--bg);font-family:'Inter',s
     <div class="spacer"></div>
     <div class="tb-title" id="detail-topbar-title">Nova agenda</div>
     <button class="tb-btn ghost" id="btn-delete-agenda" onclick="confirmDeleteAgenda()" style="display:none">🗑 Excluir</button>
+    <button class="tb-btn ghost" onclick="doLogout()" style="border-color:rgba(255,255,255,.15)">Sair</button>
   </div>
   <div id="detail-body">
 
@@ -599,6 +601,7 @@ html,body{width:100%;min-height:100vh;background:var(--bg);font-family:'Inter',s
     </div>
     <div class="tb-title" id="tb-name"></div>
     <button class="tb-btn red" onclick="endMeeting()">⏹ Encerrar</button>
+    <button class="tb-btn ghost" onclick="doLogout()" style="border-color:rgba(255,255,255,.15)">Sair</button>
   </div>
   <div id="meeting-layout">
     <div id="left">
@@ -1647,6 +1650,14 @@ document.addEventListener('keydown',e=>{
 // ══════════════════════════════
 //  INIT
 // ══════════════════════════════
+function doLogout() {
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'DO_LOGOUT' }, '*')
+  } else {
+    _supa.auth.signOut().then(() => { window.location.href = '/' })
+  }
+}
+
 function goAdminPanel() {
   // Volta para o index.html (auth-layer) que tem o painel admin
   if (window.parent && window.parent !== window) {
