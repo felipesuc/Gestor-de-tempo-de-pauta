@@ -780,11 +780,14 @@ window.addEventListener('message', async (e) => {
       userBtn.textContent = '👤 ' + profile.email.split('@')[0]
       if (profile.role === 'admin') { const ab=document.getElementById('btn-admin-panel'); if(ab) ab.style.display='inline-flex' }
     }
+    // Carrega a biblioteca
+    goLibrary()
   }
 })
 
 // Se aberto diretamente (não via iframe), tenta sessão existente
 ;(async () => {
+  // Tenta sessão existente (acesso direto sem iframe)
   const { data: { session } } = await _supa.auth.getSession()
   if (session) {
     const { data: profile } = await _supa.from('profiles').select('id,email,role,status').eq('id', session.user.id).single()
@@ -794,43 +797,76 @@ window.addEventListener('message', async (e) => {
       userBtn.textContent = '👤 ' + profile.email.split('@')[0]
       if (profile.role === 'admin') { const ab=document.getElementById('btn-admin-panel'); if(ab) ab.style.display='inline-flex' }
     }
+    // Já tem sessão, pode carregar
+    goLibrary()
+    return
   }
+  // Sem sessão direta — aguarda postMessage do iframe pai (até 5s)
+  let waited = 0
+  const wait = setInterval(() => {
+    waited += 200
+    if (currentUser || waited >= 5000) {
+      clearInterval(wait)
+      if (!currentUser) {
+        // Sem sessão nenhuma — mostra aviso
+        document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:Inter,sans-serif;color:#132044;flex-direction:column;gap:12px"><div style="font-size:32px">🔒</div><div style="font-size:14px;font-weight:600">Acesso não autorizado</div><div style="font-size:12px;color:#9aa3ae">Acesse pelo link principal da aplicação.</div></div>'
+      }
+    }
+  }, 200)
 })()
 
 // Adapta db para usar o cliente autenticado
+// Parse query string helper
+function parseQ(q) {
+  const filters = []
+  const parts = q.split('&')
+  let orderCol = null, orderAsc = true, lim = null
+  for (const p of parts) {
+    if (p.startsWith('order=')) {
+      const v = p.replace('order=','')
+      orderCol = v.split('.')[0]
+      orderAsc = !v.includes('.desc')
+    } else if (p.startsWith('limit=')) {
+      lim = parseInt(p.replace('limit=',''))
+    } else if (p.includes('=eq.')) {
+      const idx = p.indexOf('=eq.')
+      filters.push([p.slice(0,idx), p.slice(idx+4)])
+    }
+  }
+  return { filters, orderCol, orderAsc, lim }
+}
+
 const db = {
   async get(t, q='') {
+    const { filters, orderCol, orderAsc, lim } = parseQ(q)
     let query = _supa.from(t).select('*')
-    if (q.includes('order=created_at.desc')) query = query.order('created_at', { ascending: false })
-    if (q.includes('order=created_at.asc'))  query = query.order('created_at', { ascending: true })
-    if (q.includes('order=ordem.asc'))       query = query.order('ordem', { ascending: true })
-    const limitM = q.match(/limit=(\d+)/)
-    if (limitM) query = query.limit(parseInt(limitM[1]))
-    const eqMatches = [...q.matchAll(/(\w+)=eq\.([^&]+)/g)]
-    for (const [, col, val] of eqMatches) query = query.eq(col, val)
+    for (const [col, val] of filters) query = query.eq(col, val)
+    if (orderCol) query = query.order(orderCol, { ascending: orderAsc })
+    if (lim)      query = query.limit(lim)
     const { data, error } = await query
-    if (error) { console.error('db.get', t, error.message); return [] }
+    if (error) { console.error('db.get', t, error.message, error); return [] }
     return data || []
   },
   async post(t, b) {
-    const { data, error } = await _supa.from(t).insert(b).select()
-    if (error) { console.error('db.post', t, error.message); return null }
+    const payload = Array.isArray(b) ? b : [b]
+    const { data, error } = await _supa.from(t).insert(payload).select()
+    if (error) { console.error('db.post', t, error.message, error); return null }
     return data
   },
   async patch(t, q, b) {
+    const { filters } = parseQ(q)
     let query = _supa.from(t).update(b)
-    const eqMatches = [...q.matchAll(/(\w+)=eq\.([^&]+)/g)]
-    for (const [, col, val] of eqMatches) query = query.eq(col, val)
+    for (const [col, val] of filters) query = query.eq(col, val)
     const { data, error } = await query.select()
-    if (error) { console.error('db.patch', t, error.message); return null }
+    if (error) { console.error('db.patch', t, error.message, error); return null }
     return data
   },
   async del(t, q) {
+    const { filters } = parseQ(q)
     let query = _supa.from(t).delete()
-    const eqMatches = [...q.matchAll(/(\w+)=eq\.([^&]+)/g)]
-    for (const [, col, val] of eqMatches) query = query.eq(col, val)
+    for (const [col, val] of filters) query = query.eq(col, val)
     const { error } = await query
-    if (error) console.error('db.del', t, error.message)
+    if (error) console.error('db.del', t, error.message, error)
   }
 }
 
@@ -1702,7 +1738,7 @@ function goAdminPanel() {
   }
 }
 // animação pdot está no CSS
-goLibrary()
+// goLibrary() é chamado após sessão ser estabelecida
 </script>
 </body>
 </html>
