@@ -463,17 +463,27 @@ async function afterLogin(user) {
 function goApp() {
   showScreen('screen-app')
   const frame = document.getElementById('app-frame')
-  if (!frame.src || frame.src === window.location.href) {
-    frame.src = APP_URL
-  }
-  frame.onload = () => {
-    supabase.auth.getSession().then(({ data }) => {
+
+  supabase.auth.getSession().then(({ data }) => {
+    if (!data.session) return
+
+    // Passa access_token via hash para garantir que chega antes do JS rodar
+    const token = data.session.access_token
+    const refresh = data.session.refresh_token
+    const url = `${APP_URL}#access_token=${token}&refresh_token=${refresh}&type=app`
+
+    if (frame.src !== url) {
+      frame.src = url
+    }
+
+    // Também envia via postMessage como fallback
+    frame.onload = () => {
       frame.contentWindow.postMessage({
         type: 'SUPABASE_SESSION',
         session: data.session
       }, '*')
-    })
-  }
+    }
+  })
 }
 
 // Escuta mensagens do iframe

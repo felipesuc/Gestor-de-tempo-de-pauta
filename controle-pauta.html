@@ -767,53 +767,86 @@ const _supa = window.supabase.createClient(SUPA_URL, SUPA_KEY)
 
 let currentUser = null  // { id, email, role }
 
-// Recebe sessão do auth-layer via postMessage
-window.addEventListener('message', async (e) => {
-  if (e.data?.type === 'SUPABASE_SESSION' && e.data.session) {
-    await _supa.auth.setSession(e.data.session)
-    const { data: profile } = await _supa.from('profiles').select('id,email,role,status').eq('id', e.data.session.user.id).single()
-    currentUser = profile
-    track('login')
-    // Atualiza topbar com nome do usuário
-    const userBtn = document.getElementById('user-info-btn')
-    if (userBtn && profile) {
-      userBtn.textContent = '👤 ' + profile.email.split('@')[0]
-      if (profile.role === 'admin') { const ab=document.getElementById('btn-admin-panel'); if(ab) ab.style.display='inline-flex' }
+// ══ INIT — verifica sessão e carrega app ══
+async function initApp() {
+  // 0. Tenta ler token do hash da URL (passado pelo pai via iframe src)
+  const hash = window.location.hash
+  if (hash.includes('access_token=')) {
+    const params = new URLSearchParams(hash.slice(1))
+    const access_token  = params.get('access_token')
+    const refresh_token = params.get('refresh_token')
+    if (access_token) {
+      await _supa.auth.setSession({ access_token, refresh_token })
+      // Limpa o hash
+      history.replaceState(null, '', window.location.pathname)
     }
-    // Carrega a biblioteca
-    goLibrary()
+  }
+
+  // 1. Tenta sessão local (cookie/localStorage do Supabase)
+  let { data: { session } } = await _supa.auth.getSession()
+
+  // 2. Se não tem sessão local, aguarda postMessage do pai (iframe)
+  if (!session) {
+    session = await new Promise(resolve => {
+      const timer = setTimeout(() => resolve(null), 4000)
+      window.addEventListener('message', async (e) => {
+        if (e.data?.type === 'SUPABASE_SESSION' && e.data.session) {
+          clearTimeout(timer)
+          await _supa.auth.setSession(e.data.session)
+          resolve(e.data.session)
+        }
+      }, { once: true })
+    })
+  }
+
+  if (!session) {
+    document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:Inter,sans-serif;color:#132044;flex-direction:column;gap:12px;background:#f2f1eb"><div style="font-size:40px">🔒</div><div style="font-size:15px;font-weight:700">Sessão não encontrada</div><div style="font-size:12px;color:#9aa3ae;margin-top:4px">Faça login pelo link principal.</div><a href="/" style="margin-top:16px;background:#132044;color:#f5c800;padding:10px 24px;border-radius:10px;font-weight:700;font-size:13px;text-decoration:none">Ir para o login</a></div>'
+    return
+  }
+
+  // 3. Busca perfil
+  const { data: profile, error: profErr } = await _supa.from('profiles')
+    .select('id,email,role,status').eq('id', session.user.id).single()
+
+  console.log('initApp - session:', session.user.email, '| profile:', profile, '| err:', profErr)
+
+  if (!profile) {
+    document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:Inter,sans-serif;color:#132044;flex-direction:column;gap:12px;background:#f2f1eb"><div style="font-size:40px">⚠️</div><div style="font-size:15px;font-weight:700">Perfil não encontrado</div><div style="font-size:12px;color:#9aa3ae">Entre em contato com o administrador.</div></div>'
+    return
+  }
+
+  if (profile.status !== 'ativo') {
+    document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:Inter,sans-serif;color:#132044;flex-direction:column;gap:12px;background:#f2f1eb"><div style="font-size:40px">⏳</div><div style="font-size:15px;font-weight:700">Aguardando aprovação</div><div style="font-size:12px;color:#9aa3ae">O administrador ainda não aprovou seu acesso.</div></div>'
+    return
+  }
+
+  currentUser = profile
+
+  // 4. Atualiza topbar
+  const userBtn = document.getElementById('user-info-btn')
+  if (userBtn) {
+    userBtn.textContent = '👤 ' + profile.email.split('@')[0]
+    userBtn.style.cursor = 'default'
+  }
+  if (profile.role === 'admin') {
+    const ab = document.getElementById('btn-admin-panel')
+    if (ab) ab.style.display = 'inline-flex'
+  }
+
+  track('login')
+
+  // 5. Carrega biblioteca
+  goLibrary()
+}
+
+// Também escuta postMessages futuros (navegação)
+window.addEventListener('message', async (e) => {
+  if (e.data?.type === 'SUPABASE_SESSION' && e.data.session && !currentUser) {
+    await _supa.auth.setSession(e.data.session)
   }
 })
 
-// Se aberto diretamente (não via iframe), tenta sessão existente
-;(async () => {
-  // Tenta sessão existente (acesso direto sem iframe)
-  const { data: { session } } = await _supa.auth.getSession()
-  if (session) {
-    const { data: profile } = await _supa.from('profiles').select('id,email,role,status').eq('id', session.user.id).single()
-    currentUser = profile
-    const userBtn = document.getElementById('user-info-btn')
-    if (userBtn && profile) {
-      userBtn.textContent = '👤 ' + profile.email.split('@')[0]
-      if (profile.role === 'admin') { const ab=document.getElementById('btn-admin-panel'); if(ab) ab.style.display='inline-flex' }
-    }
-    // Já tem sessão, pode carregar
-    goLibrary()
-    return
-  }
-  // Sem sessão direta — aguarda postMessage do iframe pai (até 5s)
-  let waited = 0
-  const wait = setInterval(() => {
-    waited += 200
-    if (currentUser || waited >= 5000) {
-      clearInterval(wait)
-      if (!currentUser) {
-        // Sem sessão nenhuma — mostra aviso
-        document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:Inter,sans-serif;color:#132044;flex-direction:column;gap:12px"><div style="font-size:32px">🔒</div><div style="font-size:14px;font-weight:600">Acesso não autorizado</div><div style="font-size:12px;color:#9aa3ae">Acesse pelo link principal da aplicação.</div></div>'
-      }
-    }
-  }, 200)
-})()
+initApp()
 
 // Adapta db para usar o cliente autenticado
 // Parse query string helper
@@ -894,17 +927,22 @@ async function goLibrary() {
 async function loadLibrary() {
   try {
     const agendas = await db.get('agendas','order=created_at.desc&limit=100')
+    console.log('loadLibrary:', agendas?.length, 'agendas, user:', currentUser?.email)
     agendasCache = agendas
     renderLibrary(agendas)
-  } catch(e) { console.error(e) }
+  } catch(e) {
+    console.error('loadLibrary error:', e)
+    renderLibrary([])
+  }
 }
 
 function renderLibrary(agendas) {
   const empty = document.getElementById('lib-empty')
   const list  = document.getElementById('lib-list')
   const cards = document.getElementById('lib-cards')
+  if (!empty || !list || !cards) { console.error('DOM elements missing'); return }
 
-  if (!agendas.length) {
+  if (!agendas || !agendas.length) {
     empty.style.display='flex'; list.style.display='none'; return
   }
   empty.style.display='none'; list.style.display='flex'
