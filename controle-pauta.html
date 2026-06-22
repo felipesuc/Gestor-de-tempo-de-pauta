@@ -751,7 +751,7 @@ html,body{width:100%;min-height:100vh;background:var(--bg);font-family:'Inter',s
     <p id="mc-body">Tem certeza?</p>
     <div class="modal-btns">
       <button class="mbtn cancel" onclick="closeConfirm()">Cancelar</button>
-      <button class="mbtn danger" id="mc-ok" onclick="">Confirmar</button>
+      <button class="mbtn danger" id="mc-ok" onclick="confirmOk()">Confirmar</button>
     </div>
   </div>
 </div>
@@ -1192,12 +1192,18 @@ function rowTogglePlay(idx){ if(idx===curIdx){toggleBlock()}else{pauseBlock();cu
 
 function endMeeting(){
   showConfirm('Encerrar reunião','Encerrar a reunião e ver o relatório?',()=>{
-    clearInterval(meetingRef);clearInterval(blockRef);blockRunning=false
-    if(pautas[curIdx])pautas[curIdx].realSecs=blockReal
-    track('meeting_end',{blocos:pautas.length,realMin:Math.round(meetingRealSecs/60)})
-    updateBtns(); showDashboard()
-    // Marca agenda como realizada
-    if(currentAgendaId) db.patch('agendas',`id=eq.${currentAgendaId}`,{status:'realizada'}).catch(()=>{})
+    try {
+      clearInterval(meetingRef);clearInterval(blockRef);blockRunning=false
+      if(pautas[curIdx])pautas[curIdx].realSecs=blockReal
+      track('meeting_end',{blocos:pautas.length,realMin:Math.round(meetingRealSecs/60)})
+      updateBtns()
+      showDashboard()
+      // Marca agenda como realizada
+      if(currentAgendaId) db.patch('agendas',`id=eq.${currentAgendaId}`,{status:'realizada'}).catch(()=>{})
+    } catch(err) {
+      console.error('endMeeting error:', err)
+      alert('Erro ao encerrar: ' + err.message)
+    }
   })
 }
 
@@ -1640,9 +1646,21 @@ function hl(id){const el=document.getElementById(id);el.style.borderColor='var(-
 
 // Modal confirmar
 let confirmCb=null
-function showConfirm(title,body,cb){document.getElementById('mc-title').textContent=title;document.getElementById('mc-body').textContent=body;confirmCb=cb;document.getElementById('modal-confirm').classList.add('show')}
-function closeConfirm(){document.getElementById('modal-confirm').classList.remove('show');confirmCb=null}
-document.getElementById('mc-ok').onclick=()=>{closeConfirm();if(confirmCb)confirmCb()}
+let confirmCb = null
+function showConfirm(title, body, cb) {
+  document.getElementById('mc-title').textContent = title
+  document.getElementById('mc-body').textContent  = body
+  confirmCb = cb
+  document.getElementById('modal-confirm').classList.add('show')
+}
+function closeConfirm() {
+  document.getElementById('modal-confirm').classList.remove('show')
+  confirmCb = null
+}
+function confirmOk() {
+  closeConfirm()
+  if (confirmCb) confirmCb()
+}
 
 // Teclado (só na tela de reunião)
 document.addEventListener('keydown',e=>{
